@@ -1,0 +1,134 @@
+---
+title: "taxihack"
+output: html_document
+date: "2023-08-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(caret)
+library(factoextra)
+```
+
+```{r}
+firstTaxi <- read.csv("104804470.csv")
+claimsData <- read.csv("claims_data (1).csv")
+```
+
+```{r}
+#alldata <- read_rds("all_data.rds")
+```
+
+
+```{r}
+firstTaxiSpeed <- firstTaxi %>% 
+  select("partition_date", "vehicleid", "timestamp", "speed", "road_speed", "SP_NAME") %>% 
+  mutate(road_speed = as.integer(road_speed))
+firstTaxiSpeed
+```
+```{r}
+firstTaxiSpeedingPercentage <- firstTaxiSpeed %>% 
+  drop_na(road_speed) %>% 
+  group_by(SP_NAME, vehicleid) %>% 
+  count(speed > road_speed) %>% 
+  pivot_wider(names_from = "speed > road_speed", values_from = n) %>% 
+  replace(is.na(.), 0) %>% 
+  rename(Slower = "FALSE") %>% 
+  rename(Faster = "TRUE") %>% 
+  mutate(total = Slower + Faster) %>% 
+  mutate(speedingPercentage = Faster/total * 100)
+  
+firstTaxiSpeedingPercentage
+```
+```{r}
+firstTaxiSpeeding10More <- firstTaxiSpeed %>% 
+  drop_na(road_speed) %>% 
+  group_by(SP_NAME, vehicleid) %>% 
+  filter((speed - road_speed) >= 10) %>% 
+  mutate(difference = speed - road_speed) %>% 
+  arrange(desc(difference)) 
+firstTaxiSpeeding10More
+```
+```{r}
+firstTaxiAvg <- firstTaxiSpeed %>% 
+  select(vehicleid, SP_NAME, speed, road_speed) %>% 
+  group_by(SP_NAME, vehicleid) %>% 
+  summarise(mean(road_speed), mean(speed)) %>% 
+  rename(avgspeed = "mean(speed)") %>% 
+  rename(avglimit = "mean(road_speed)") %>% 
+  mutate(Speeding = case_when(avgspeed > avglimit ~ "TRUE",
+                              avgspeed <= avglimit ~ "FALSE"))
+firstTaxiAvg
+```
+```{r}
+firstTaxiAvgnot <- firstTaxiAvg %>% 
+  filter(Speeding == TRUE)
+firstTaxiAvgnot
+```
+
+```{r}
+firstTaxiAvg1 <- firstTaxiAvg %>% 
+  mutate(avgDifference = avglimit - avgspeed) %>% 
+  select(SP_NAME, avgDifference)
+firstTaxiAvg1
+```
+```{r}
+summary(firstTaxiAvg1)
+```
+```{r}
+firstTaxiRisk <- firstTaxiAvg %>% 
+  mutate(avgDifference = avglimit - avgspeed) %>% 
+  mutate(speedRiskLevel = case_when(avgDifference < summary(firstTaxiAvg1$`avgDifference`)[2] ~ "3",
+                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[4] ~ "2",
+                               avgDifference >= summary(firstTaxiAvg1$`avgDifference`)[4] ~ "1",
+                               avgDifference < 0 ~ "3"))
+firstTaxiRisk
+```
+
+```{r}
+firstTaxiCorner <- firstTaxi%>% 
+  select("partition_date", "vehicleid", "timestamp","lateral_g", "SP_NAME") %>% 
+  filter(lateral_g > 0) 
+firstTaxiCorner
+```
+```{r}
+firstTaxiCornerRisk <- firstTaxiCorner %>% 
+  mutate(cornerRisk = case_when(lateral_g < summary(firstTaxiCorner$`lateral_g`)[2] ~ "1",
+                   lateral_g < summary(firstTaxiCorner$`lateral_g`)[4] | lateral_g < 0.42  ~ "2",
+                   lateral_g >= summary(firstTaxiCorner$`lateral_g`)[4] ~ "3",
+                   lateral_g >= 0.42 ~ "3"))
+firstTaxiCornerRisk
+```
+```{r}
+firstTaxiCornerAvg <- firstTaxiCornerRisk %>% 
+  group_by(vehicleid) %>% 
+  drop_na(cornerRisk) %>% 
+  summarise(avgLateral_g = mean(lateral_g)) 
+firstTaxiCornerAvg
+
+```
+
+```{r}
+firstTaxiCornerRiskAvg <- firstTaxiCornerRisk %>% 
+  group_by(vehicleid) %>% 
+  drop_na(cornerRisk) %>% 
+  summarise(avgconerRisk = mean(as.numeric(cornerRisk)))
+firstTaxiCornerRiskAvg
+```
+```{r}
+firstTaxiCornerCombine <- firstTaxiCornerAvg %>% 
+  left_join(firstTaxiCornerRiskAvg, firstTaxiCornerAvg, by = c("vehicleid"))
+firstTaxiCornerCombine
+```
+

@@ -85,24 +85,34 @@ firstTaxiAvg1
 ```
 ```{r}
 summary(firstTaxiAvg1)
-summary(firstTaxiCornerRisk)
+#summary(firstTaxiCornerRisk)
 ```
 ```{r}
 firstTaxiRisk <- firstTaxiAvg %>% 
   mutate(avgDifference = avglimit - avgspeed) %>% 
   mutate(speedRiskLevel = case_when(
-                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.1) ~ "10",
-                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.2) ~ "9",
-                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.3) ~ "8",
-                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.4) ~ "7",
-                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.5) ~ "6",
-                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.6) ~ "5",
-                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.7) ~ "4",
-                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.8) ~ "3",
-                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.9) ~ "2",
-                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*1.0) ~ "1",))
+                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.1) & avgDifference > 0 ~ "10",
+                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.2) & avgDifference > 0 ~ "9",
+                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.3) & avgDifference > 0 ~ "8",
+                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.4) & avgDifference > 0 ~ "7",
+                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.5) & avgDifference > 0 ~ "6",
+                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.6) & avgDifference > 0 ~ "5",
+                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.7) & avgDifference > 0 ~ "4",
+                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.8) & avgDifference > 0 ~ "3",
+                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*0.9) & avgDifference > 0 ~ "2",
+                               avgDifference < summary(firstTaxiAvg1$`avgDifference`)[1] + ((summary(firstTaxiAvg1$`avgDifference`)[6] - summary(firstTaxiAvg1$`avgDifference`)[1])*1.0) & avgDifference > 0 ~ "1",
+                               avgDifference <= 0 ~ "10")) %>% 
+  arrange(as.numeric(speedRiskLevel))
 firstTaxiRisk
 ```
+```{r}
+firstTaxiRiskAvg <- firstTaxiRisk %>% 
+  group_by(vehicleid) %>% 
+  drop_na(speedRiskLevel) %>% 
+  summarise(avgSpeedRisk = mean(as.numeric(speedRiskLevel)))
+firstTaxiRiskAvg
+```
+
 
 ```{r}
 firstTaxiCorner <- firstTaxi%>% 
@@ -117,12 +127,14 @@ firstTaxiCornerRisk <- firstTaxiCorner %>%
                    lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*0.2)~ "2",
                    lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*0.3)~ "3",
                    lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*0.4)~ "4",
-                   lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*0.5)~ "5",
-                   lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*0.6)~ "6",
-                   lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*0.7)~ "7",
-                   lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*0.8)~ "8",
-                   lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*0.9)~ "9",
-                   lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*01.0)~ "10",))
+                   lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*0.5) & lateral_g < 0.42~ "5",
+                   lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*0.6) & lateral_g < 0.42~ "6",
+                   lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*0.7) & lateral_g < 0.42~ "7",
+                   lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*0.8) & lateral_g < 0.42~ "8",
+                   lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*0.9) & lateral_g < 0.42~ "9",
+                   lateral_g < summary(firstTaxiCorner$`lateral_g`)[1] + ((summary(firstTaxiCorner$`lateral_g`)[6] - summary(firstTaxiCorner$`lateral_g`)[1])*01.0)& lateral_g < 0.42~ "10",
+                   lateral_g >= 0.42 ~ "10")) %>% 
+  arrange(desc(as.numeric(cornerRisk)))
 firstTaxiCornerRisk
 ```
 ```{r}
@@ -152,5 +164,32 @@ firstTaxiBraking <- firstTaxi %>%
   filter(linear_g < 0) %>% 
   arrange(desc(linear_g))
 firstTaxiBraking
+```
+```{r}
+summary(firstTaxiBraking)
+```
+
+```{r}
+firstTaxiBrakingRisk <- firstTaxiBraking %>% 
+  mutate(brakingRisk = case_when(linear_g < summary(firstTaxiBraking$`linear_g`)[1] + ((summary(firstTaxiBraking$`linear_g`)[6] - summary(firstTaxiBraking$`linear_g`)[1])*0.1)~ "10",
+                   linear_g < summary(firstTaxiBraking$`linear_g`)[1] + ((summary(firstTaxiBraking$`linear_g`)[6] - summary(firstTaxiBraking$`linear_g`)[1])*0.2) & linear_g > -0.5~ "9",
+                   linear_g < summary(firstTaxiBraking$`linear_g`)[1] + ((summary(firstTaxiBraking$`linear_g`)[6] - summary(firstTaxiBraking$`linear_g`)[1])*0.3) & linear_g > -0.5~ "8",
+                   linear_g < summary(firstTaxiBraking$`linear_g`)[1] + ((summary(firstTaxiBraking$`linear_g`)[6] - summary(firstTaxiBraking$`linear_g`)[1])*0.4) & linear_g > -0.5~ "7",
+                   linear_g < summary(firstTaxiBraking$`linear_g`)[1] + ((summary(firstTaxiBraking$`linear_g`)[6] - summary(firstTaxiBraking$`linear_g`)[1])*0.5) & linear_g > -0.5~ "6",
+                   linear_g < summary(firstTaxiBraking$`linear_g`)[1] + ((summary(firstTaxiBraking$`linear_g`)[6] - summary(firstTaxiBraking$`linear_g`)[1])*0.6) & linear_g > -0.5~ "5",
+                   linear_g < summary(firstTaxiBraking$`linear_g`)[1] + ((summary(firstTaxiBraking$`linear_g`)[6] - summary(firstTaxiBraking$`linear_g`)[1])*0.7) & linear_g > -0.5~ "4",
+                   linear_g < summary(firstTaxiBraking$`linear_g`)[1] + ((summary(firstTaxiBraking$`linear_g`)[6] - summary(firstTaxiBraking$`linear_g`)[1])*0.8) & linear_g > -0.5~ "3",
+                   linear_g < summary(firstTaxiBraking$`linear_g`)[1] + ((summary(firstTaxiBraking$`linear_g`)[6] - summary(firstTaxiBraking$`linear_g`)[1])*0.9) & linear_g > -0.5~ "2",
+                   linear_g < summary(firstTaxiBraking$`linear_g`)[1] + ((summary(firstTaxiBraking$`linear_g`)[6] - summary(firstTaxiBraking$`linear_g`)[1])*01.0)& linear_g > -0.5~ "1",
+                   linear_g <= -0.5 ~ "10")) %>% 
+  arrange(desc(as.numeric(brakingRisk)))
+firstTaxiBrakingRisk
+```
+```{r}
+firstTaxiBrakingRiskAvg <- firstTaxiBrakingRisk %>% 
+  group_by(vehicleid) %>% 
+  drop_na(brakingRisk) %>% 
+  summarise(avgBrakingRisk = mean(as.numeric(brakingRisk)))
+firstTaxiBrakingRiskAvg
 ```
 

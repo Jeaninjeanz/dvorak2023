@@ -1,0 +1,51 @@
+---
+title: "TaxiCluster"
+output: html_document
+date: "2023-08-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(caret)
+library(factoextra)
+```
+#reading in rds files
+```{r}
+averageTimeOn <- read_rds("average_speed_intervals.rds")
+taxiAnalysis <- read_rds("TaxiRiskAnalysis.rds")
+averageTimeOn
+taxiAnalysis
+```
+#getting the time spent on from the table by removing the time spent off from the dataset, also selecting the relevant columns
+```{r}
+averageTimeOnTotal <- averageTimeOn %>% 
+  filter(event_description == "Ign OFF") %>% 
+  select(vehicleid, time_ON_Sec, distance_KM, average_speed_KMpH)
+averageTimeOnTotal
+```
+#Averaging the data out to be used for clustering analysis
+```{r}
+averageTimeOnTotalAvg <- averageTimeOnTotal %>% 
+  group_by(vehicleid) %>% 
+  summarise(time_ON_SecAvg = mean(as.numeric(time_ON_Sec)), distance_KMAvg = mean(as.numeric(distance_KM)), average_speed_KMpHAvg = mean(as.numeric(average_speed_KMpH)))
+averageTimeOnTotalAvg
+```
+#joining the two tables to allow for clustering 
+
+#note may have to remove the vehicle ids, not sure if it will affect the clusters
+```{r}
+clusterTable <- taxiAnalysis %>% 
+  left_join(averageTimeOnTotalAvg, taxiAnalysis, by = "vehicleid")
+clusterTable
+```
+

@@ -1,0 +1,97 @@
+---
+title: "Untitled"
+output: html_document
+date: "2023-08-17"
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(caret)
+library(factoextra)
+```
+
+## R Markdown
+
+```{r}
+claims <- read.csv("claims_data (1).csv")
+taxis <- read_rds("all_data.rds")
+claims
+```
+```{r}
+claimed <- claims %>% 
+  filter(number.of.claims > 0) %>% 
+  filter(vehicleid != 155517428)
+claimed
+```
+```{r}
+claimed2 <- claimed %>% 
+  inner_join(taxis, claimed2, by = "vehicleid") %>% 
+  filter(gps_fix_type == 3)
+claimed2
+```
+```{r}
+oneclaim <- claimed2 %>% 
+  filter(number.of.claims > 0) %>% 
+  select(vehicleid, timestamp, speed, linear_g, lateral_g)
+oneclaim
+```
+```{r}
+minLinear <- oneclaim %>% 
+  group_by(vehicleid) %>% 
+  summarize(linear_g = min(linear_g)) %>% 
+  left_join(oneclaim, minLinear, by = "linear_g") %>% 
+  arrange(linear_g) %>% 
+  filter(vehicleid.x == vehicleid.y) %>% 
+  rename(vehicleid = "vehicleid.x") %>% 
+  select(!"vehicleid.y")
+minLinear
+```
+```{r}
+maxLat <- oneclaim %>% 
+  group_by(vehicleid) %>% 
+  summarize(lateral_g = max(lateral_g))%>% 
+  left_join(oneclaim, maxLat, by = "lateral_g") %>% 
+  arrange(desc(lateral_g)) %>% 
+  filter(vehicleid.x == vehicleid.y) %>% 
+  rename(vehicleid = "vehicleid.x") %>% 
+  select(!"vehicleid.y")
+maxLat
+```
+```{r}
+maxLinear <- oneclaim %>% 
+  group_by(vehicleid) %>% 
+  summarize(linear_g = max(linear_g)) %>% 
+  left_join(oneclaim, minLinear, by = "linear_g") %>% 
+  arrange(desc(linear_g)) %>% 
+  filter(vehicleid.x == vehicleid.y) %>% 
+  rename(vehicleid = "vehicleid.x") %>% 
+  select(!"vehicleid.y")
+maxLinear
+```
+
+```{r}
+joinTable <- minLinear %>% 
+  left_join(maxLat, minLinear, by = "vehicleid") %>% 
+  rename(Minlinear_g = "linear_g.x", MinLinSpeed = "speed.x", MinLinLateral_g = "lateral_g.x", MinLinTimestamp = "timestamp.x") %>% 
+  rename(MaxLateral_g = "lateral_g.y", MaxLatTimestamp = "timestamp.y", maxLatSpeed = "speed.y", maxLatLinear_g = "linear_g.y") %>% 
+  left_join(maxLinear, joinTable, by = "vehicleid") %>% 
+  rename(maxLinear_g = "linear_g", maxlinTimestamp = "timestamp", maxlinspeed = "speed", maxLinLateral_g = "lateral_g") %>% 
+  distinct(vehicleid, MinLinTimestamp, MaxLatTimestamp,  maxlinTimestamp)
+joinTable
+```
+```{r}
+joinTableTimes <- joinTable %>% 
+  select(vehicleid, MinLinTimestamp, maxlinTimestamp,  MaxLatTimestamp) %>% 
+  mutate(linearDifference = MinLinTimestamp - maxlinTimestamp) %>% 
+  mutate(MinLinearLateralDifference = MinLinTimestamp - MaxLatTimestamp) %>% 
+  mutate(MaxLinearLateralDifference = maxlinTimestamp - MaxLatTimestamp) %>% 
+  filter((linearDifference < 300 & linearDifference > -300) | (MinLinearLateralDifference < 5 & MinLinearLateralDifference >-5) | (MaxLinearLateralDifference < 0.833 & MaxLinearLateralDifference >-0.833))
+joinTableTimes
+```
+```{r}
+joinTablesClaims <- joinTableTimes %>% 
+  left_join(claimed, joinTableTimes, by = "vehicleid")
+joinTablesClaims
+```
+

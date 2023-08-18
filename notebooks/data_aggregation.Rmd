@@ -1,0 +1,86 @@
+---
+title: "Data Aggregation and Cleaning"
+output: html_notebook
+---
+```{r Setup}
+library(tidyverse)
+library(fs)
+library(readr)
+library(lubridate)
+library(data.table)
+```
+
+# data reading 
+```{r}
+#get the filepath and names of files in current directory that ends with .csv 
+dir_ls('.')
+files <- dir_ls('.',
+                regexp = "\\.csv$")
+
+#testing the read function on the file path
+read_csv(files[1])
+
+#reading multiple csv files
+data <- files %>% 
+  map_dfr(read_csv)
+
+#checking for 106 unique vehicle ids
+length(unique(data$vehicleid))
+
+head(data)
+summary(data)
+```
+
+# data preprocessing 
+```{r}
+#formatting
+dataCleaned <- data %>% 
+  mutate(id = as.character(id)) %>% 
+  mutate(road_speed = coalesce(road_speed,0)) %>% 
+  mutate(terminal_id = as.character(terminal_id)) %>% 
+  mutate(gps_fix_type = as.character(gps_fix_type)) %>% 
+  mutate(SP_CODE = as.character(SP_CODE)) 
+  
+#N/A values
+
+## Not in current scope
+# - longitude and latitude
+# - SP Code
+
+## In current scope
+# - odometer 
+# - road_speed
+  
+dataCleanedNA <- dataCleaned %>% 
+  # ---------------------------
+  # speed to meters/sec
+  # time difference of current row and previous row i-1
+  # speed in meters/sec * time difference = distance traveled in meters
+  # previous odo + distance traveled in meters = current odo
+  mutate(odometer = replace_na(
+           (speed*1000)/60/60 * 
+           as.numeric(timestamp - lag(timestamp)) + 
+           lag(odometer)
+                              )
+        )
+  
+
+  # mutate(
+  #   odometer = case_when(
+  #     odometer == NA_character_ ~  
+  #         (speed*1000)/60/60 * 
+  #         as.numeric(timestamp - dplyr::lag(timestamp)) + 
+  #         dplyr::lag(odometer)
+  #   )
+  # )
+  
+  
+  summary(dataCleanedNA)
+  
+  
+
+temp <- (dataCleaned$speed[500]*1000)/60 * as.numeric((dataCleaned$timestamp[500]) - dplyr::lag(dataCleaned$timestamp[500])) + lag(dataCleaned$odometer[500])
+
+```
+
+

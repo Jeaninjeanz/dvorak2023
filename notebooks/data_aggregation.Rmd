@@ -57,29 +57,27 @@ dataCleanedNA <- dataCleaned %>%
   # time difference of current row and previous row i-1
   # speed in meters/sec * time difference = distance traveled in meters
   # previous odo + distance traveled in meters = current odo
-  mutate(odometer = replace_na(
-           (speed*1000)/60/60 * 
-           as.numeric(timestamp - lag(timestamp)) + 
-           lag(odometer)
-                              )
-        )
+  # mutate(odometer = replace_na(
+  #          ((speed*3.6) *
+  #          as.numeric(timestamp - lag(timestamp))) +
+  #          lag(odometer)
+  #                             )
+  #       )
   
 
-  # mutate(
-  #   odometer = case_when(
-  #     odometer == NA_character_ ~  
-  #         (speed*1000)/60/60 * 
-  #         as.numeric(timestamp - dplyr::lag(timestamp)) + 
-  #         dplyr::lag(odometer)
-  #   )
-  # )
+  mutate(
+    odometer = case_when(
+      odometer == NA ~
+          ((speed*3.6) *
+          as.numeric(timestamp - dplyr::lag(timestamp))) +
+          dplyr::lag(odometer)
+    )
+  )
   
   
   summary(dataCleanedNA)
   
-  
-
-temp <- (dataCleaned$speed[500]*1000)/60 * as.numeric((dataCleaned$timestamp[500]) - dplyr::lag(dataCleaned$timestamp[500])) + lag(dataCleaned$odometer[500])
+temp <- (dataCleaned$speed[500] * 3.6) * as.numeric(dataCleaned$timestamp[500] - lag(dataCleaned$timestamp)[500]) + lag(dataCleaned$odometer)[500]
 
 ```
 

@@ -261,6 +261,6 @@ firstTaxiRisk <- firstTaxiSpeedRiskAvg %>%
 firstTaxiRisk
 ```
 ```{r}
-saveRDS(firstTaxiRisk, file = "TaxiRiskAnalysis.rds") 
+saveRDS(firstTaxiRisk, file = "../data/TaxiRiskAnalysis.rds") 
 ```
 

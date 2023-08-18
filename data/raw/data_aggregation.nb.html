@@ -11,7 +11,7 @@
 
 
 
-<title>Clustering Notebook</title>
+<title>Data Aggregation and Cleaning</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1746,178 +1746,201 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Clustering Notebook</h1>
+<h1 class="title toc-ignore">Data Aggregation and Cleaning</h1>
 
 </div>
 
 
 <!-- rnb-text-begin -->
-<div id="clustering" class="section level1">
-<h1>Clustering</h1>
-<div id="normalizing" class="section level2">
-<h2>normalizing</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2x1c3RlclRhYmxlX25vcm1hbGl6ZWQgPC0gc2NhbGUoY2x1c3RlclRhYmxlKVxuIyBtYXkgaGF2ZSB0byBkcm9wIHNvbWUgY29sdW1ucyBiZWZvcmUgcnVubmluZyB0aGlzIGxpbmUgXlxuYGBgIn0= -->
-<pre class="r"><code>clusterTable_normalized &lt;- scale(clusterTable)
-# may have to drop some columns before running this line ^</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShkYXRhLnRhYmxlKVxuXG5gYGAifQ== -->
+<pre class="r"><code>library(data.table)
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="principle-component-analysis" class="section level2">
-<h2>principle component analysis</h2>
-<div id="inspecting-pairwise-combinations" class="section level3">
-<h3>inspecting pairwise combinations</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGFpcnMoY2x1c3RlclRhYmxlX25vcm1hbGl6ZWQpXG5gYGAifQ== -->
-<pre class="r"><code>pairs(clusterTable_normalized)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="inspecting-correlation" class="section level3">
-<h3>inspecting correlation</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2x1c3RlclRhYmxlX2NvcnJfbWF0cml4IDwtIGNvcihjbHVzdGVyVGFibGVfbm9ybWFsaXplZClcbmdnY29ycnBsb3QoY2x1c3RlclRhYmxlX2NvcnJfbWF0cml4KVxuYGBgIn0= -->
-<pre class="r"><code>clusterTable_corr_matrix &lt;- cor(clusterTable_normalized)
-ggcorrplot(clusterTable_corr_matrix)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="inspecting-covariance" class="section level3">
-<h3>inspecting covariance</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY292KGNsdXN0ZXJUYWJsZV9ub3JtYWxpemVkKVxuYGBgIn0= -->
-<pre class="r"><code>cov(clusterTable_normalized)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="importance-of-components" class="section level3">
-<h3>importance of components</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2x1c3RlclRhYmxlX3BjYSA8LSBwcmluY29tcChjbHVzdGVyVGFibGVfY29ycl9tYXRyaXgpXG5zdW1tYXJ5KGNsdXN0ZXJUYWJsZV9wY2EpXG5gYGAifQ== -->
-<pre class="r"><code>clusterTable_pca &lt;- princomp(clusterTable_corr_matrix)
-summary(clusterTable_pca)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="relation-of-components-to-columns" class="section level3">
-<h3>relation of components to columns</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2x1c3RlclRhYmxlX3BjYSRsb2FkaW5nc1ssIDE6Ml1cbmBgYCJ9 -->
-<pre class="r"><code>clusterTable_pca$loadings[, 1:2]</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-</div>
-<div id="visualizations" class="section level2">
-<h2>visualizations</h2>
-<div id="importance-of-principle-components" class="section level3">
-<h3>importance of principle components</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZnZpel9laWcoY2x1c3RlclRhYmxlX3BjYSwgYWRkbGFiZWxzID0gVFJVRSlcbmBgYCJ9 -->
-<pre class="r"><code>fviz_eig(clusterTable_pca, addlabels = TRUE)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="principle-components-similarities-and-dissimilarities-attribute-impact-on-principle-components" class="section level3">
-<h3>principle components similarities and dissimilarities, attribute
-impact on principle components</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZnZpel9wY2FfdmFyKGNsdXN0ZXJUYWJsZV9wY2EsIGNvbC52YXIgPSBcImJsYWNrXCIpXG5gYGAifQ== -->
-<pre class="r"><code>fviz_pca_var(clusterTable_pca, col.var = &quot;black&quot;)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>variables grouped tightly together are positively related, opposite
-variables are negatively related, and the distance from origin is how
-well represented the variable is.</p>
-</div>
-<div id="contribution-of-attributes-to-principle-components" class="section level3">
-<h3>contribution of attributes to principle components</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZnZpel9jb3MyKGNsdXN0ZXJUYWJsZV9wY2EsIGNob2ljZSA9IFwidmFyXCIsIGF4ZXMgPSAxOjIpXG5gYGAifQ== -->
-<pre class="r"><code>fviz_cos2(clusterTable_pca, choice = &quot;var&quot;, axes = 1:2)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="optimum-clusters" class="section level3">
-<h3>optimum clusters</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZmFjdG9leHRyYTo6ZnZpel9uYmNsdXN0KHg9Y2x1c3RlclRhYmxlLFxuICAgICAgICAgICAgICAgICAgICAgICAgIGttZWFucyxcbiAgICAgICAgICAgICAgICAgICAgICAgICBtZXRob2QgPSBjKFwid3NzXCIpKVxuXG5mYWN0b2V4dHJhOjpmdml6X25iY2x1c3QoeD1jbHVzdGVyVGFibGUsXG4gICAgICAgICAgICAgICAgICAgICAgICAga21lYW5zLFxuICAgICAgICAgICAgICAgICAgICAgICAgIG1ldGhvZCA9IGMoXCJzaWxob3VldHRlXCIpKVxuYGBgIn0= -->
-<pre class="r"><code>factoextra::fviz_nbclust(x=clusterTable,
-                         kmeans,
-                         method = c(&quot;wss&quot;))
+<!-- rnb-output-begin eyJkYXRhIjoiUmVnaXN0ZXJlZCBTMyBtZXRob2Qgb3ZlcndyaXR0ZW4gYnkgJ2RhdGEudGFibGUnOlxuICBtZXRob2QgICAgICAgICAgIGZyb21cbiAgcHJpbnQuZGF0YS50YWJsZSAgICAgXG5kYXRhLnRhYmxlIDEuMTQuOCB1c2luZyAxIHRocmVhZHMgKHNlZSA/Z2V0RFR0aHJlYWRzKS4gIExhdGVzdCBuZXdzOiByLWRhdGF0YWJsZS5jb21cbioqKioqKioqKipcblRoaXMgaW5zdGFsbGF0aW9uIG9mIGRhdGEudGFibGUgaGFzIG5vdCBkZXRlY3RlZCBPcGVuTVAgc3VwcG9ydC4gSXQgc2hvdWxkIHN0aWxsIHdvcmsgYnV0IGluIHNpbmdsZS10aHJlYWRlZCBtb2RlLlxuVGhpcyBpcyBhIE1hYy4gUGxlYXNlIHJlYWQgaHR0cHM6Ly9tYWMuci1wcm9qZWN0Lm9yZy9vcGVubXAvLiBQbGVhc2UgZW5nYWdlIHdpdGggQXBwbGUgYW5kIGFzayB0aGVtIGZvciBzdXBwb3J0LiBDaGVjayByLWRhdGF0YWJsZS5jb20gZm9yIHVwZGF0ZXMsIGFuZCBvdXIgTWFjIGluc3RydWN0aW9ucyBoZXJlOiBodHRwczovL2dpdGh1Yi5jb20vUmRhdGF0YWJsZS9kYXRhLnRhYmxlL3dpa2kvSW5zdGFsbGF0aW9uLiBBZnRlciBzZXZlcmFsIHllYXJzIG9mIG1hbnkgcmVwb3J0cyBvZiBpbnN0YWxsYXRpb24gcHJvYmxlbXMgb24gTWFjLCBpdCdzIHRpbWUgdG8gZ2luZ2VybHkgcG9pbnQgb3V0IHRoYXQgdGhlcmUgaGF2ZSBiZWVuIG5vIHNpbWlsYXIgcHJvYmxlbXMgb24gV2luZG93cyBvciBMaW51eC5cbioqKioqKioqKipcblxuQXR0YWNoaW5nIHBhY2thZ2U6IOKAmGRhdGEudGFibGXigJlcblxuVGhlIGZvbGxvd2luZyBvYmplY3RzIGFyZSBtYXNrZWQgZnJvbSDigJhwYWNrYWdlOmx1YnJpZGF0ZeKAmTpcblxuICAgIGhvdXIsIGlzb3dlZWssIG1kYXksIG1pbnV0ZSwgbW9udGgsIHF1YXJ0ZXIsIHNlY29uZCwgd2RheSwgd2VlaywgeWRheSwgeWVhclxuXG5UaGUgZm9sbG93aW5nIG9iamVjdHMgYXJlIG1hc2tlZCBmcm9tIOKAmHBhY2thZ2U6ZHBseXLigJk6XG5cbiAgICBiZXR3ZWVuLCBmaXJzdCwgbGFzdFxuXG5UaGUgZm9sbG93aW5nIG9iamVjdCBpcyBtYXNrZWQgZnJvbSDigJhwYWNrYWdlOnB1cnJy4oCZOlxuXG4gICAgdHJhbnNwb3NlXG4ifQ== -->
+<pre><code>Registered S3 method overwritten by &#39;data.table&#39;:
+  method           from
+  print.data.table     
+data.table 1.14.8 using 1 threads (see ?getDTthreads).  Latest news: r-datatable.com
+**********
+This installation of data.table has not detected OpenMP support. It should still work but in single-threaded mode.
+This is a Mac. Please read https://mac.r-project.org/openmp/. Please engage with Apple and ask them for support. Check r-datatable.com for updates, and our Mac instructions here: https://github.com/Rdatatable/data.table/wiki/Installation. After several years of many reports of installation problems on Mac, it&#39;s time to gingerly point out that there have been no similar problems on Windows or Linux.
+**********
 
-factoextra::fviz_nbclust(x=clusterTable,
-                         kmeans,
-                         method = c(&quot;silhouette&quot;))</code></pre>
+Attaching package: ‘data.table’
+
+The following objects are masked from ‘package:lubridate’:
+
+    hour, isoweek, mday, minute, month, quarter, second, wday, week, yday, year
+
+The following objects are masked from ‘package:dplyr’:
+
+    between, first, last
+
+The following object is masked from ‘package:purrr’:
+
+    transpose</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<div id="data-reading" class="section level1">
+<h1>data reading</h1>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtbWFyeShkYXRhKVxuXG5gYGAifQ== -->
+<pre class="r"><code>summary(data)
+</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIHBhcnRpdGlvbl9kYXRlICAgICAgICAgICAgIGlkICAgICAgICAgICAgICB2ZWhpY2xlaWQgICAgICAgICBjb29yZGluYXRlX2xhdGl0dWRlXG4gTWluLiAgIDoyMDIyLTAxLTAxICAgTWluLiAgIDogNzU2NTU3ODYgICBNaW4uICAgOiA3NTY1NTc4NiAgIE1pbi4gICA6LTM0LjgzICAgICBcbiAxc3QgUXUuOjIwMjItMDEtMjQgICAxc3QgUXUuOjEzOTQyNDc2NiAgIDFzdCBRdS46MTM5NDI0NzY2ICAgMXN0IFF1LjotMzQuMDMgICAgIFxuIE1lZGlhbiA6MjAyMi0wMi0xNiAgIE1lZGlhbiA6MTYwNzAyMjUwICAgTWVkaWFuIDoxNjA3MDIyNTAgICBNZWRpYW4gOi0zMy45NyAgICAgXG4gTWVhbiAgIDoyMDIyLTAyLTE1ICAgTWVhbiAgIDoxNTE2NDk1NTEgICBNZWFuICAgOjE1MTY0OTU1MSAgIE1lYW4gICA6LTMzLjkyICAgICBcbiAzcmQgUXUuOjIwMjItMDMtMDkgICAzcmQgUXUuOjE2OTM4NTgxOCAgIDNyZCBRdS46MTY5Mzg1ODE4ICAgM3JkIFF1LjotMzMuOTEgICAgIFxuIE1heC4gICA6MjAyMi0wNC0wMSAgIE1heC4gICA6MjUxODcxMzQ4ICAgTWF4LiAgIDoyNTE4NzEzNDggICBNYXguICAgOi0yNi4yMiAgICAgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIE5BJ3MgICA6MTIgICAgICAgICBcbiBjb29yZGluYXRlX2xvbmdpdHVkZSAgIHRpbWVzdGFtcCAgICAgICAgICAgICAgICAgICAgICAgIGhlYWRpbmcgICAgaWduaXRpb25TdGF0ZSAgICAgXG4gTWluLiAgIDoxNy44MyAgICAgICAgTWluLiAgIDoyMDIyLTAxLTAxIDAwOjAwOjAxLjAgICBNaW4uICAgOiAgMCAgIExlbmd0aDo0NzExNzk2ICAgIFxuIDFzdCBRdS46MTguNTQgICAgICAgIDFzdCBRdS46MjAyMi0wMS0yNCAwNzo0NToyMi4wICAgMXN0IFF1LjogNzEgICBDbGFzcyA6Y2hhcmFjdGVyICBcbiBNZWRpYW4gOjE4LjY0ICAgICAgICBNZWRpYW4gOjIwMjItMDItMTYgMTU6Mjk6NDAuMCAgIE1lZGlhbiA6MTY2ICAgTW9kZSAgOmNoYXJhY3RlciAgXG4gTWVhbiAgIDoxOC44OSAgICAgICAgTWVhbiAgIDoyMDIyLTAyLTE1IDEzOjIxOjU0LjIgICBNZWFuICAgOjE2NiAgICAgICAgICAgICAgICAgICAgIFxuIDNyZCBRdS46MTguNzMgICAgICAgIDNyZCBRdS46MjAyMi0wMy0wOSAxMzowNjo1My41ICAgM3JkIFF1LjoyNjQgICAgICAgICAgICAgICAgICAgICBcbiBNYXguICAgOjI5LjAzICAgICAgICBNYXguICAgOjIwMjItMDQtMDEgMjM6NTk6NTkuMCAgIE1heC4gICA6MzYwICAgICAgICAgICAgICAgICAgICAgXG4gTkEncyAgIDoxMiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuICAgIG9kb21ldGVyICAgICAgICAgICAgIHNwZWVkICAgICAgICAgICAgIHZleHQgICAgICAgZXZlbnRfZGVzY3JpcHRpb24gICAgIGxpbmVhcl9nICAgICAgICBcbiBNaW4uICAgOiAgICAgMTE0NSAgIE1pbi4gICA6ICAwLjAwICAgTWluLiAgIDogMC4wMCAgIExlbmd0aDo0NzExNzk2ICAgICBNaW4uICAgOi00LjA4MDAwMCAgXG4gMXN0IFF1LjoxMjcxMzc0NTIgICAxc3QgUXUuOiAgNi4wMCAgIDFzdCBRdS46MTQuMTYgICBDbGFzcyA6Y2hhcmFjdGVyICAgMXN0IFF1LjogMC4wMDAwMDAgIFxuIE1lZGlhbiA6MjAwNDU4MDU1ICAgTWVkaWFuIDogMTYuMDAgICBNZWRpYW4gOjE0LjE2ICAgTW9kZSAgOmNoYXJhY3RlciAgIE1lZGlhbiA6IDAuMDAwMDAwICBcbiBNZWFuICAgOjIyNzUxMDc0NCAgIE1lYW4gICA6IDIzLjIzICAgTWVhbiAgIDoxNC4yNiAgICAgICAgICAgICAgICAgICAgICBNZWFuICAgOi0wLjAwMTQ1MiAgXG4gM3JkIFF1LjoyOTMxMDk5NjcgICAzcmQgUXUuOiAzNC4wMCAgIDNyZCBRdS46MTQuNTIgICAgICAgICAgICAgICAgICAgICAgM3JkIFF1LjogMC4wMDAwMDAgIFxuIE1heC4gICA6NjYzMDI2MTk0ICAgTWF4LiAgIDoxODkuMDAgICBNYXguICAgOjE4LjQ4ICAgICAgICAgICAgICAgICAgICAgIE1heC4gICA6IDMuOTEwMDAwICBcbiBOQSdzICAgOjM3MiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gICBsYXRlcmFsX2cgICAgICAgIHRlcm1pbmFsX2lkICAgICAgICAgcmVjaWV2ZWRfdHMgICAgICAgICAgICAgICAgICAgICAgcm9hZF9zcGVlZCAgICBcbiBNaW4uICAgOjAuMDAwMDAgICBNaW4uICAgOiA3NjUwMDEwMyAgIE1pbi4gICA6MjAyMi0wMS0wMSAwMDowMDoyOC4wICAgTWluLiAgIDogMjAuMDAgIFxuIDFzdCBRdS46MC4wMDAwMCAgIDFzdCBRdS46MTMzODMzNDI1ICAgMXN0IFF1LjoyMDIyLTAxLTI0IDA5OjAxOjIzLjUgICAxc3QgUXUuOiA2MC4wMCAgXG4gTWVkaWFuIDowLjAwMDAwICAgTWVkaWFuIDoxNTE1NDE5NDMgICBNZWRpYW4gOjIwMjItMDItMTYgMTY6NDQ6MjQuMCAgIE1lZGlhbiA6IDYwLjAwICBcbiBNZWFuICAgOjAuMDM3MjEgICBNZWFuICAgOjE0NzY2MTUzNiAgIE1lYW4gICA6MjAyMi0wMi0xNSAxNDoyODoxOC4wICAgTWVhbiAgIDogNjEuNjcgIFxuIDNyZCBRdS46MC4wNTAwMCAgIDNyZCBRdS46MTY0NzYwNDY2ICAgM3JkIFF1LjoyMDIyLTAzLTA5IDE0OjE0OjAyLjAgICAzcmQgUXUuOiA2MC4wMCAgXG4gTWF4LiAgIDoxLjU0MDAwICAgTWF4LiAgIDoyNTAwOTgwMzcgICBNYXguICAgOjIwMjItMDQtMDQgMTE6MjQ6MzcuMCAgIE1heC4gICA6MTIwLjAwICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTkEncyAgIDo1MDIxOSAgIFxuICBncHNfZml4X3R5cGUgICAgZ3BzX2FjY3VyYWN5ICAgICAgdmdzbSAgICAgICAgICB4X2FjY2VsICAgICAgICAgIHlfYWNjZWwgICAgICBcbiBNaW4uICAgOjAuMDAwICAgTWluLiAgIDowICAgICBNaW4uICAgOjAuMDAwICAgTWluLiAgIDotMi4zICAgICBNaW4uICAgOi0yLjMgICAgXG4gMXN0IFF1LjozLjAwMCAgIDFzdCBRdS46MCAgICAgMXN0IFF1Ljo0LjUwMCAgIDFzdCBRdS46LTAuMSAgICAgMXN0IFF1LjotMC4xICAgIFxuIE1lZGlhbiA6My4wMDAgICBNZWRpYW4gOjAgICAgIE1lZGlhbiA6NC41NjAgICBNZWRpYW4gOiAwLjAgICAgIE1lZGlhbiA6IDAuMCAgICBcbiBNZWFuICAgOjIuOTIxICAgTWVhbiAgIDowICAgICBNZWFuICAgOjQuNTIxICAgTWVhbiAgIDogMC4wICAgICBNZWFuICAgOiAwLjAgICAgXG4gM3JkIFF1LjozLjAwMCAgIDNyZCBRdS46MCAgICAgM3JkIFF1Ljo0LjU4MCAgIDNyZCBRdS46IDAuMCAgICAgM3JkIFF1LjogMC4wICAgIFxuIE1heC4gICA6My4wMDAgICBNYXguICAgOjAgICAgIE1heC4gICA6NC42MzAgICBNYXguICAgOiAxLjggICAgIE1heC4gICA6IDIuMyAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTkEncyAgIDo5MDM5MzQgICBOQSdzICAgOjgwOTMyNiAgXG4gICAgel9hY2NlbCAgICAgICAgICBhbHRpdHVkZSAgICAgICAgICBTUF9DT0RFICAgICAgICAgICAgU1BfTkFNRSAgICAgICAgICAgIE1QX05BTUUgICAgICAgICBcbiBNaW4uICAgOi0yLjMgICAgIE1pbi4gICA6IC01MC4wMCAgIE1pbi4gICA6MTYwMDAyMDAxICAgTGVuZ3RoOjQ3MTE3OTYgICAgIExlbmd0aDo0NzExNzk2ICAgIFxuIDFzdCBRdS46IDAuMCAgICAgMXN0IFF1LjogIDIwLjAwICAgMXN0IFF1LjoxOTkwMTcwMjUgICBDbGFzcyA6Y2hhcmFjdGVyICAgQ2xhc3MgOmNoYXJhY3RlciAgXG4gTWVkaWFuIDogMC4wICAgICBNZWRpYW4gOiAgMzcuMDAgICBNZWRpYW4gOjE5OTAzMzAwNCAgIE1vZGUgIDpjaGFyYWN0ZXIgICBNb2RlICA6Y2hhcmFjdGVyICBcbiBNZWFuICAgOiAwLjAgICAgIE1lYW4gICA6ICA2OS4xNSAgIE1lYW4gICA6MTk0ODUzMDY0ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuIDNyZCBRdS46IDAuMCAgICAgM3JkIFF1LjogIDY4LjAwICAgM3JkIFF1LjoxOTkwNDEwMDMgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gTWF4LiAgIDogMi4zICAgICBNYXguICAgOjM5NjcuMDAgICBNYXguICAgOjc5NzAxMDA0OCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiBOQSdzICAgOjU1MTE2MSAgIE5BJ3MgICA6MzQ4NDEgICAgIE5BJ3MgICA6MjcyICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuICAgTU5fTkFNRSAgICAgICAgICAgIERDX05BTUUgICAgICAgICAgICBQUl9OQU1FICAgICAgICAgICAgY3JlYXRlZF90cyAgICAgICAgICAgICAgICAgICAgXG4gTGVuZ3RoOjQ3MTE3OTYgICAgIExlbmd0aDo0NzExNzk2ICAgICBMZW5ndGg6NDcxMTc5NiAgICAgTWluLiAgIDoyMDIyLTAxLTAxIDAwOjAwOjU2LjU4ICBcbiBDbGFzcyA6Y2hhcmFjdGVyICAgQ2xhc3MgOmNoYXJhY3RlciAgIENsYXNzIDpjaGFyYWN0ZXIgICAxc3QgUXUuOjIwMjItMDEtMjQgMDc6NDg6MjQuODUgIFxuIE1vZGUgIDpjaGFyYWN0ZXIgICBNb2RlICA6Y2hhcmFjdGVyICAgTW9kZSAgOmNoYXJhY3RlciAgIE1lZGlhbiA6MjAyMi0wMi0xNiAxNTozMzowNi42MCAgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTWVhbiAgIDoyMDIyLTAyLTE1IDEzOjI4OjM0LjY5ICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAzcmQgUXUuOjIwMjItMDMtMDkgMTM6MTE6NDkuMDQgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIE1heC4gICA6MjAyMi0wNC0wNCAwOToyNDo0NC4xOSAgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiBjb3VudHJ5X25hbWUgICAgICBcbiBMZW5ndGg6NDcxMTc5NiAgICBcbiBDbGFzcyA6Y2hhcmFjdGVyICBcbiBNb2RlICA6Y2hhcmFjdGVyICBcbiAgICAgICAgICAgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICBcbiJ9 -->
+<pre><code> partition_date             id              vehicleid         coordinate_latitude
+ Min.   :2022-01-01   Min.   : 75655786   Min.   : 75655786   Min.   :-34.83     
+ 1st Qu.:2022-01-24   1st Qu.:139424766   1st Qu.:139424766   1st Qu.:-34.03     
+ Median :2022-02-16   Median :160702250   Median :160702250   Median :-33.97     
+ Mean   :2022-02-15   Mean   :151649551   Mean   :151649551   Mean   :-33.92     
+ 3rd Qu.:2022-03-09   3rd Qu.:169385818   3rd Qu.:169385818   3rd Qu.:-33.91     
+ Max.   :2022-04-01   Max.   :251871348   Max.   :251871348   Max.   :-26.22     
+                                                              NA&#39;s   :12         
+ coordinate_longitude   timestamp                        heading    ignitionState     
+ Min.   :17.83        Min.   :2022-01-01 00:00:01.0   Min.   :  0   Length:4711796    
+ 1st Qu.:18.54        1st Qu.:2022-01-24 07:45:22.0   1st Qu.: 71   Class :character  
+ Median :18.64        Median :2022-02-16 15:29:40.0   Median :166   Mode  :character  
+ Mean   :18.89        Mean   :2022-02-15 13:21:54.2   Mean   :166                     
+ 3rd Qu.:18.73        3rd Qu.:2022-03-09 13:06:53.5   3rd Qu.:264                     
+ Max.   :29.03        Max.   :2022-04-01 23:59:59.0   Max.   :360                     
+ NA&#39;s   :12                                                                           
+    odometer             speed             vext       event_description     linear_g        
+ Min.   :     1145   Min.   :  0.00   Min.   : 0.00   Length:4711796     Min.   :-4.080000  
+ 1st Qu.:127137452   1st Qu.:  6.00   1st Qu.:14.16   Class :character   1st Qu.: 0.000000  
+ Median :200458055   Median : 16.00   Median :14.16   Mode  :character   Median : 0.000000  
+ Mean   :227510744   Mean   : 23.23   Mean   :14.26                      Mean   :-0.001452  
+ 3rd Qu.:293109967   3rd Qu.: 34.00   3rd Qu.:14.52                      3rd Qu.: 0.000000  
+ Max.   :663026194   Max.   :189.00   Max.   :18.48                      Max.   : 3.910000  
+ NA&#39;s   :372                                                                                
+   lateral_g        terminal_id         recieved_ts                      road_speed    
+ Min.   :0.00000   Min.   : 76500103   Min.   :2022-01-01 00:00:28.0   Min.   : 20.00  
+ 1st Qu.:0.00000   1st Qu.:133833425   1st Qu.:2022-01-24 09:01:23.5   1st Qu.: 60.00  
+ Median :0.00000   Median :151541943   Median :2022-02-16 16:44:24.0   Median : 60.00  
+ Mean   :0.03721   Mean   :147661536   Mean   :2022-02-15 14:28:18.0   Mean   : 61.67  
+ 3rd Qu.:0.05000   3rd Qu.:164760466   3rd Qu.:2022-03-09 14:14:02.0   3rd Qu.: 60.00  
+ Max.   :1.54000   Max.   :250098037   Max.   :2022-04-04 11:24:37.0   Max.   :120.00  
+                                                                       NA&#39;s   :50219   
+  gps_fix_type    gps_accuracy      vgsm          x_accel          y_accel      
+ Min.   :0.000   Min.   :0     Min.   :0.000   Min.   :-2.3     Min.   :-2.3    
+ 1st Qu.:3.000   1st Qu.:0     1st Qu.:4.500   1st Qu.:-0.1     1st Qu.:-0.1    
+ Median :3.000   Median :0     Median :4.560   Median : 0.0     Median : 0.0    
+ Mean   :2.921   Mean   :0     Mean   :4.521   Mean   : 0.0     Mean   : 0.0    
+ 3rd Qu.:3.000   3rd Qu.:0     3rd Qu.:4.580   3rd Qu.: 0.0     3rd Qu.: 0.0    
+ Max.   :3.000   Max.   :0     Max.   :4.630   Max.   : 1.8     Max.   : 2.3    
+                                               NA&#39;s   :903934   NA&#39;s   :809326  
+    z_accel          altitude          SP_CODE            SP_NAME            MP_NAME         
+ Min.   :-2.3     Min.   : -50.00   Min.   :160002001   Length:4711796     Length:4711796    
+ 1st Qu.: 0.0     1st Qu.:  20.00   1st Qu.:199017025   Class :character   Class :character  
+ Median : 0.0     Median :  37.00   Median :199033004   Mode  :character   Mode  :character  
+ Mean   : 0.0     Mean   :  69.15   Mean   :194853064                                        
+ 3rd Qu.: 0.0     3rd Qu.:  68.00   3rd Qu.:199041003                                        
+ Max.   : 2.3     Max.   :3967.00   Max.   :797010048                                        
+ NA&#39;s   :551161   NA&#39;s   :34841     NA&#39;s   :272                                              
+   MN_NAME            DC_NAME            PR_NAME            created_ts                    
+ Length:4711796     Length:4711796     Length:4711796     Min.   :2022-01-01 00:00:56.58  
+ Class :character   Class :character   Class :character   1st Qu.:2022-01-24 07:48:24.85  
+ Mode  :character   Mode  :character   Mode  :character   Median :2022-02-16 15:33:06.60  
+                                                          Mean   :2022-02-15 13:28:34.69  
+                                                          3rd Qu.:2022-03-09 13:11:49.04  
+                                                          Max.   :2022-04-04 09:24:44.19  
+                                                                                          
+ country_name      
+ Length:4711796    
+ Class :character  
+ Mode  :character  
+                   
+                   
+                   
+                   </code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
-</div>
-<div id="modeling-optimum-clusters" class="section level2">
-<h2>modeling optimum clusters</h2>
+<div id="data-preprocessing" class="section level1">
+<h1>data preprocessing</h1>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2x1c3Rlcl9tb2RlbCA8LSBrbWVhbnMoY2x1c3RlclRhYmxlLFxuICAgICAgICAgICAgICAgICAgICAgICAgY2VudGVycyA9IDMsXG4gICAgICAgICAgICAgICAgICAgICAgICBuc3RhcnQgPSAxMCxcbiAgICAgICAgICAgICAgICAgICAgICAgIGl0ZXIubWF4ID0gMjUpXG5jbHVzdGVyX21vZGVsXG5gYGAifQ== -->
-<pre class="r"><code>cluster_model &lt;- kmeans(clusterTable,
-                        centers = 3,
-                        nstart = 10,
-                        iter.max = 25)
-cluster_model</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuICBzdW1tYXJ5KGRhdGFDbGVhbmVkTkEpXG5cbmBgYCJ9 -->
+<pre class="r"><code>  summary(dataCleanedNA)
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="appending-data-with-relevant-clusters" class="section level2">
-<h2>appending data with relevant clusters</h2>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGF4aVJpc2tDbHVzdGVyZWQgPC0gY2JpbmQoY2x1c3RlclRhYmxlLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgY2x1c3RlciA9IGNsdXN0ZXJfbW9kZWwkY2x1c3RlcilcbmhlYWQodGF4aVJpc2tDbHVzdGVyZWQpXG5gYGAifQ== -->
-<pre class="r"><code>taxiRiskClustered &lt;- cbind(clusterTable,
-                           cluster = cluster_model$cluster)
-head(taxiRiskClustered)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-</div>
-<div id="visualizing-clusters" class="section level1">
-<h1>visualizing clusters</h1>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZnZpel9jbHVzdGVyKGNsdXN0ZXJfbW9kZWwsIGZlbWFsZV9jbHVzdGVyZWQsIFxuICAgICAgICAgICAgIGVsbGlwc2UudHlwZSA9IFwiY29udmV4XCIsXG4gICAgICAgICAgICAgZ2VvbT1jKFwicG9pbnRcIiksIFxuICAgICAgICAgICAgIHBhbGV0dGUgPSBcImpjb1wiLCBcbiAgICAgICAgICAgICBnZ3RoZW1lID0gdGhlbWVfY2xhc3NpYygpKSBcbnJtKGxpc3QgPSBscyhhbGwubmFtZXMgPSBUUlVFKSlcbmBgYCJ9 -->
-<pre class="r"><code>fviz_cluster(cluster_model, female_clustered, 
-             ellipse.type = &quot;convex&quot;,
-             geom=c(&quot;point&quot;), 
-             palette = &quot;jco&quot;, 
-             ggtheme = theme_classic()) 
-rm(list = ls(all.names = TRUE))</code></pre>
-<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIHBhcnRpdGlvbl9kYXRlICAgICAgICAgICAgaWQgICAgICAgICAgICAgIHZlaGljbGVpZCAgICAgICAgIGNvb3JkaW5hdGVfbGF0aXR1ZGVcbiBNaW4uICAgOjIwMjItMDEtMDEgICBMZW5ndGg6NDcxMTc5NiAgICAgTWluLiAgIDogNzU2NTU3ODYgICBNaW4uICAgOi0zNC44MyAgICAgXG4gMXN0IFF1LjoyMDIyLTAxLTI0ICAgQ2xhc3MgOmNoYXJhY3RlciAgIDFzdCBRdS46MTM5NDI0NzY2ICAgMXN0IFF1LjotMzQuMDMgICAgIFxuIE1lZGlhbiA6MjAyMi0wMi0xNiAgIE1vZGUgIDpjaGFyYWN0ZXIgICBNZWRpYW4gOjE2MDcwMjI1MCAgIE1lZGlhbiA6LTMzLjk3ICAgICBcbiBNZWFuICAgOjIwMjItMDItMTUgICAgICAgICAgICAgICAgICAgICAgTWVhbiAgIDoxNTE2NDk1NTEgICBNZWFuICAgOi0zMy45MiAgICAgXG4gM3JkIFF1LjoyMDIyLTAzLTA5ICAgICAgICAgICAgICAgICAgICAgIDNyZCBRdS46MTY5Mzg1ODE4ICAgM3JkIFF1LjotMzMuOTEgICAgIFxuIE1heC4gICA6MjAyMi0wNC0wMSAgICAgICAgICAgICAgICAgICAgICBNYXguICAgOjI1MTg3MTM0OCAgIE1heC4gICA6LTI2LjIyICAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBOQSdzICAgOjEyICAgICAgICAgXG4gY29vcmRpbmF0ZV9sb25naXR1ZGUgICB0aW1lc3RhbXAgICAgICAgICAgICAgICAgICAgICAgICBoZWFkaW5nICAgIGlnbml0aW9uU3RhdGUgICAgIFxuIE1pbi4gICA6MTcuODMgICAgICAgIE1pbi4gICA6MjAyMi0wMS0wMSAwMDowMDowMS4wICAgTWluLiAgIDogIDAgICBMZW5ndGg6NDcxMTc5NiAgICBcbiAxc3QgUXUuOjE4LjU0ICAgICAgICAxc3QgUXUuOjIwMjItMDEtMjQgMDc6NDU6MjIuMCAgIDFzdCBRdS46IDcxICAgQ2xhc3MgOmNoYXJhY3RlciAgXG4gTWVkaWFuIDoxOC42NCAgICAgICAgTWVkaWFuIDoyMDIyLTAyLTE2IDE1OjI5OjQwLjAgICBNZWRpYW4gOjE2NiAgIE1vZGUgIDpjaGFyYWN0ZXIgIFxuIE1lYW4gICA6MTguODkgICAgICAgIE1lYW4gICA6MjAyMi0wMi0xNSAxMzoyMTo1NC4yICAgTWVhbiAgIDoxNjYgICAgICAgICAgICAgICAgICAgICBcbiAzcmQgUXUuOjE4LjczICAgICAgICAzcmQgUXUuOjIwMjItMDMtMDkgMTM6MDY6NTMuNSAgIDNyZCBRdS46MjY0ICAgICAgICAgICAgICAgICAgICAgXG4gTWF4LiAgIDoyOS4wMyAgICAgICAgTWF4LiAgIDoyMDIyLTA0LTAxIDIzOjU5OjU5LjAgICBNYXguICAgOjM2MCAgICAgICAgICAgICAgICAgICAgIFxuIE5BJ3MgICA6MTIgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiAgICBvZG9tZXRlciAgICAgICAgICAgc3BlZWQgICAgICAgICAgICAgdmV4dCAgICAgICBldmVudF9kZXNjcmlwdGlvbiAgICAgbGluZWFyX2cgICAgICAgIFxuIE1pbi4gICA6IE5BICAgICAgIE1pbi4gICA6ICAwLjAwICAgTWluLiAgIDogMC4wMCAgIExlbmd0aDo0NzExNzk2ICAgICBNaW4uICAgOi00LjA4MDAwMCAgXG4gMXN0IFF1LjogTkEgICAgICAgMXN0IFF1LjogIDYuMDAgICAxc3QgUXUuOjE0LjE2ICAgQ2xhc3MgOmNoYXJhY3RlciAgIDFzdCBRdS46IDAuMDAwMDAwICBcbiBNZWRpYW4gOiBOQSAgICAgICBNZWRpYW4gOiAxNi4wMCAgIE1lZGlhbiA6MTQuMTYgICBNb2RlICA6Y2hhcmFjdGVyICAgTWVkaWFuIDogMC4wMDAwMDAgIFxuIE1lYW4gICA6TmFOICAgICAgIE1lYW4gICA6IDIzLjIzICAgTWVhbiAgIDoxNC4yNiAgICAgICAgICAgICAgICAgICAgICBNZWFuICAgOi0wLjAwMTQ1MiAgXG4gM3JkIFF1LjogTkEgICAgICAgM3JkIFF1LjogMzQuMDAgICAzcmQgUXUuOjE0LjUyICAgICAgICAgICAgICAgICAgICAgIDNyZCBRdS46IDAuMDAwMDAwICBcbiBNYXguICAgOiBOQSAgICAgICBNYXguICAgOjE4OS4wMCAgIE1heC4gICA6MTguNDggICAgICAgICAgICAgICAgICAgICAgTWF4LiAgIDogMy45MTAwMDAgIFxuIE5BJ3MgICA6NDcxMTc5NiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gICBsYXRlcmFsX2cgICAgICAgdGVybWluYWxfaWQgICAgICAgICByZWNpZXZlZF90cyAgICAgICAgICAgICAgICAgICAgICByb2FkX3NwZWVkICAgIFxuIE1pbi4gICA6MC4wMDAwMCAgIExlbmd0aDo0NzExNzk2ICAgICBNaW4uICAgOjIwMjItMDEtMDEgMDA6MDA6MjguMCAgIE1pbi4gICA6ICAwLjAwICBcbiAxc3QgUXUuOjAuMDAwMDAgICBDbGFzcyA6Y2hhcmFjdGVyICAgMXN0IFF1LjoyMDIyLTAxLTI0IDA5OjAxOjIzLjUgICAxc3QgUXUuOiA2MC4wMCAgXG4gTWVkaWFuIDowLjAwMDAwICAgTW9kZSAgOmNoYXJhY3RlciAgIE1lZGlhbiA6MjAyMi0wMi0xNiAxNjo0NDoyNC4wICAgTWVkaWFuIDogNjAuMDAgIFxuIE1lYW4gICA6MC4wMzcyMSAgICAgICAgICAgICAgICAgICAgICBNZWFuICAgOjIwMjItMDItMTUgMTQ6Mjg6MTguMCAgIE1lYW4gICA6IDYxLjAyICBcbiAzcmQgUXUuOjAuMDUwMDAgICAgICAgICAgICAgICAgICAgICAgM3JkIFF1LjoyMDIyLTAzLTA5IDE0OjE0OjAyLjAgICAzcmQgUXUuOiA2MC4wMCAgXG4gTWF4LiAgIDoxLjU0MDAwICAgICAgICAgICAgICAgICAgICAgIE1heC4gICA6MjAyMi0wNC0wNCAxMToyNDozNy4wICAgTWF4LiAgIDoxMjAuMDAgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiBncHNfZml4X3R5cGUgICAgICAgIGdwc19hY2N1cmFjeSAgICAgIHZnc20gICAgICAgICAgeF9hY2NlbCAgICAgICAgICB5X2FjY2VsICAgICAgXG4gTGVuZ3RoOjQ3MTE3OTYgICAgIE1pbi4gICA6MCAgICAgTWluLiAgIDowLjAwMCAgIE1pbi4gICA6LTIuMyAgICAgTWluLiAgIDotMi4zICAgIFxuIENsYXNzIDpjaGFyYWN0ZXIgICAxc3QgUXUuOjAgICAgIDFzdCBRdS46NC41MDAgICAxc3QgUXUuOi0wLjEgICAgIDFzdCBRdS46LTAuMSAgICBcbiBNb2RlICA6Y2hhcmFjdGVyICAgTWVkaWFuIDowICAgICBNZWRpYW4gOjQuNTYwICAgTWVkaWFuIDogMC4wICAgICBNZWRpYW4gOiAwLjAgICAgXG4gICAgICAgICAgICAgICAgICAgIE1lYW4gICA6MCAgICAgTWVhbiAgIDo0LjUyMSAgIE1lYW4gICA6IDAuMCAgICAgTWVhbiAgIDogMC4wICAgIFxuICAgICAgICAgICAgICAgICAgICAzcmQgUXUuOjAgICAgIDNyZCBRdS46NC41ODAgICAzcmQgUXUuOiAwLjAgICAgIDNyZCBRdS46IDAuMCAgICBcbiAgICAgICAgICAgICAgICAgICAgTWF4LiAgIDowICAgICBNYXguICAgOjQuNjMwICAgTWF4LiAgIDogMS44ICAgICBNYXguICAgOiAyLjMgICAgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIE5BJ3MgICA6OTAzOTM0ICAgTkEncyAgIDo4MDkzMjYgIFxuICAgIHpfYWNjZWwgICAgICAgICAgYWx0aXR1ZGUgICAgICAgICBTUF9DT0RFICAgICAgICAgICAgU1BfTkFNRSAgICAgICAgICAgIE1QX05BTUUgICAgICAgICBcbiBNaW4uICAgOi0yLjMgICAgIE1pbi4gICA6IC01MC4wMCAgIExlbmd0aDo0NzExNzk2ICAgICBMZW5ndGg6NDcxMTc5NiAgICAgTGVuZ3RoOjQ3MTE3OTYgICAgXG4gMXN0IFF1LjogMC4wICAgICAxc3QgUXUuOiAgMjAuMDAgICBDbGFzcyA6Y2hhcmFjdGVyICAgQ2xhc3MgOmNoYXJhY3RlciAgIENsYXNzIDpjaGFyYWN0ZXIgIFxuIE1lZGlhbiA6IDAuMCAgICAgTWVkaWFuIDogIDM3LjAwICAgTW9kZSAgOmNoYXJhY3RlciAgIE1vZGUgIDpjaGFyYWN0ZXIgICBNb2RlICA6Y2hhcmFjdGVyICBcbiBNZWFuICAgOiAwLjAgICAgIE1lYW4gICA6ICA2OS4xNSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gM3JkIFF1LjogMC4wICAgICAzcmQgUXUuOiAgNjguMDAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuIE1heC4gICA6IDIuMyAgICAgTWF4LiAgIDozOTY3LjAwICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiBOQSdzICAgOjU1MTE2MSAgIE5BJ3MgICA6MzQ4NDEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gICBNTl9OQU1FICAgICAgICAgICAgRENfTkFNRSAgICAgICAgICAgIFBSX05BTUUgICAgICAgICAgICBjcmVhdGVkX3RzICAgICAgICAgICAgICAgICAgICBcbiBMZW5ndGg6NDcxMTc5NiAgICAgTGVuZ3RoOjQ3MTE3OTYgICAgIExlbmd0aDo0NzExNzk2ICAgICBNaW4uICAgOjIwMjItMDEtMDEgMDA6MDA6NTYuNTggIFxuIENsYXNzIDpjaGFyYWN0ZXIgICBDbGFzcyA6Y2hhcmFjdGVyICAgQ2xhc3MgOmNoYXJhY3RlciAgIDFzdCBRdS46MjAyMi0wMS0yNCAwNzo0ODoyNC44NSAgXG4gTW9kZSAgOmNoYXJhY3RlciAgIE1vZGUgIDpjaGFyYWN0ZXIgICBNb2RlICA6Y2hhcmFjdGVyICAgTWVkaWFuIDoyMDIyLTAyLTE2IDE1OjMzOjA2LjYwICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBNZWFuICAgOjIwMjItMDItMTUgMTM6Mjg6MzQuNjkgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDNyZCBRdS46MjAyMi0wMy0wOSAxMzoxMTo0OS4wNCAgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTWF4LiAgIDoyMDIyLTA0LTA0IDA5OjI0OjQ0LjE5ICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuIGNvdW50cnlfbmFtZSAgICAgIFxuIExlbmd0aDo0NzExNzk2ICAgIFxuIENsYXNzIDpjaGFyYWN0ZXIgIFxuIE1vZGUgIDpjaGFyYWN0ZXIgIFxuICAgICAgICAgICAgICAgICAgIFxuICAgICAgICAgICAgICAgICAgIFxuICAgICAgICAgICAgICAgICAgIFxuICAgICAgICAgICAgICAgICAgIFxuIn0= -->
+<pre><code> partition_date            id              vehicleid         coordinate_latitude
+ Min.   :2022-01-01   Length:4711796     Min.   : 75655786   Min.   :-34.83     
+ 1st Qu.:2022-01-24   Class :character   1st Qu.:139424766   1st Qu.:-34.03     
+ Median :2022-02-16   Mode  :character   Median :160702250   Median :-33.97     
+ Mean   :2022-02-15                      Mean   :151649551   Mean   :-33.92     
+ 3rd Qu.:2022-03-09                      3rd Qu.:169385818   3rd Qu.:-33.91     
+ Max.   :2022-04-01                      Max.   :251871348   Max.   :-26.22     
+                                                             NA&#39;s   :12         
+ coordinate_longitude   timestamp                        heading    ignitionState     
+ Min.   :17.83        Min.   :2022-01-01 00:00:01.0   Min.   :  0   Length:4711796    
+ 1st Qu.:18.54        1st Qu.:2022-01-24 07:45:22.0   1st Qu.: 71   Class :character  
+ Median :18.64        Median :2022-02-16 15:29:40.0   Median :166   Mode  :character  
+ Mean   :18.89        Mean   :2022-02-15 13:21:54.2   Mean   :166                     
+ 3rd Qu.:18.73        3rd Qu.:2022-03-09 13:06:53.5   3rd Qu.:264                     
+ Max.   :29.03        Max.   :2022-04-01 23:59:59.0   Max.   :360                     
+ NA&#39;s   :12                                                                           
+    odometer           speed             vext       event_description     linear_g        
+ Min.   : NA       Min.   :  0.00   Min.   : 0.00   Length:4711796     Min.   :-4.080000  
+ 1st Qu.: NA       1st Qu.:  6.00   1st Qu.:14.16   Class :character   1st Qu.: 0.000000  
+ Median : NA       Median : 16.00   Median :14.16   Mode  :character   Median : 0.000000  
+ Mean   :NaN       Mean   : 23.23   Mean   :14.26                      Mean   :-0.001452  
+ 3rd Qu.: NA       3rd Qu.: 34.00   3rd Qu.:14.52                      3rd Qu.: 0.000000  
+ Max.   : NA       Max.   :189.00   Max.   :18.48                      Max.   : 3.910000  
+ NA&#39;s   :4711796                                                                          
+   lateral_g       terminal_id         recieved_ts                      road_speed    
+ Min.   :0.00000   Length:4711796     Min.   :2022-01-01 00:00:28.0   Min.   :  0.00  
+ 1st Qu.:0.00000   Class :character   1st Qu.:2022-01-24 09:01:23.5   1st Qu.: 60.00  
+ Median :0.00000   Mode  :character   Median :2022-02-16 16:44:24.0   Median : 60.00  
+ Mean   :0.03721                      Mean   :2022-02-15 14:28:18.0   Mean   : 61.02  
+ 3rd Qu.:0.05000                      3rd Qu.:2022-03-09 14:14:02.0   3rd Qu.: 60.00  
+ Max.   :1.54000                      Max.   :2022-04-04 11:24:37.0   Max.   :120.00  
+                                                                                      
+ gps_fix_type        gps_accuracy      vgsm          x_accel          y_accel      
+ Length:4711796     Min.   :0     Min.   :0.000   Min.   :-2.3     Min.   :-2.3    
+ Class :character   1st Qu.:0     1st Qu.:4.500   1st Qu.:-0.1     1st Qu.:-0.1    
+ Mode  :character   Median :0     Median :4.560   Median : 0.0     Median : 0.0    
+                    Mean   :0     Mean   :4.521   Mean   : 0.0     Mean   : 0.0    
+                    3rd Qu.:0     3rd Qu.:4.580   3rd Qu.: 0.0     3rd Qu.: 0.0    
+                    Max.   :0     Max.   :4.630   Max.   : 1.8     Max.   : 2.3    
+                                                  NA&#39;s   :903934   NA&#39;s   :809326  
+    z_accel          altitude         SP_CODE            SP_NAME            MP_NAME         
+ Min.   :-2.3     Min.   : -50.00   Length:4711796     Length:4711796     Length:4711796    
+ 1st Qu.: 0.0     1st Qu.:  20.00   Class :character   Class :character   Class :character  
+ Median : 0.0     Median :  37.00   Mode  :character   Mode  :character   Mode  :character  
+ Mean   : 0.0     Mean   :  69.15                                                           
+ 3rd Qu.: 0.0     3rd Qu.:  68.00                                                           
+ Max.   : 2.3     Max.   :3967.00                                                           
+ NA&#39;s   :551161   NA&#39;s   :34841                                                             
+   MN_NAME            DC_NAME            PR_NAME            created_ts                    
+ Length:4711796     Length:4711796     Length:4711796     Min.   :2022-01-01 00:00:56.58  
+ Class :character   Class :character   Class :character   1st Qu.:2022-01-24 07:48:24.85  
+ Mode  :character   Mode  :character   Mode  :character   Median :2022-02-16 15:33:06.60  
+                                                          Mean   :2022-02-15 13:28:34.69  
+                                                          3rd Qu.:2022-03-09 13:11:49.04  
+                                                          Max.   :2022-04-04 09:24:44.19  
+                                                                                          
+ country_name      
+ Length:4711796    
+ Class :character  
+ Mode  :character  
+                   
+                   
+                   
+                   </code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiQ2x1c3RlcmluZyBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKCiMgQ2x1c3RlcmluZwoKIyMgbm9ybWFsaXppbmcKYGBge3J9CmNsdXN0ZXJUYWJsZV9ub3JtYWxpemVkIDwtIHNjYWxlKGNsdXN0ZXJUYWJsZSkKIyBtYXkgaGF2ZSB0byBkcm9wIHNvbWUgY29sdW1ucyBiZWZvcmUgcnVubmluZyB0aGlzIGxpbmUgXgpgYGAKCiMjIHByaW5jaXBsZSBjb21wb25lbnQgYW5hbHlzaXMKIyMjIGluc3BlY3RpbmcgcGFpcndpc2UgY29tYmluYXRpb25zCmBgYHtyfQpwYWlycyhjbHVzdGVyVGFibGVfbm9ybWFsaXplZCkKYGBgCgojIyMgaW5zcGVjdGluZyBjb3JyZWxhdGlvbgpgYGB7cn0KY2x1c3RlclRhYmxlX2NvcnJfbWF0cml4IDwtIGNvcihjbHVzdGVyVGFibGVfbm9ybWFsaXplZCkKZ2djb3JycGxvdChjbHVzdGVyVGFibGVfY29ycl9tYXRyaXgpCmBgYAoKIyMjIGluc3BlY3RpbmcgY292YXJpYW5jZQpgYGB7cn0KY292KGNsdXN0ZXJUYWJsZV9ub3JtYWxpemVkKQpgYGAKCiMjIyBpbXBvcnRhbmNlIG9mIGNvbXBvbmVudHMKYGBge3J9CmNsdXN0ZXJUYWJsZV9wY2EgPC0gcHJpbmNvbXAoY2x1c3RlclRhYmxlX2NvcnJfbWF0cml4KQpzdW1tYXJ5KGNsdXN0ZXJUYWJsZV9wY2EpCmBgYAoKIyMjIHJlbGF0aW9uIG9mIGNvbXBvbmVudHMgdG8gY29sdW1ucwpgYGB7cn0KY2x1c3RlclRhYmxlX3BjYSRsb2FkaW5nc1ssIDE6Ml0KYGBgCgojIyB2aXN1YWxpemF0aW9ucwojIyMgaW1wb3J0YW5jZSBvZiBwcmluY2lwbGUgY29tcG9uZW50cwpgYGB7cn0KZnZpel9laWcoY2x1c3RlclRhYmxlX3BjYSwgYWRkbGFiZWxzID0gVFJVRSkKYGBgCgojIyMgcHJpbmNpcGxlIGNvbXBvbmVudHMgc2ltaWxhcml0aWVzIGFuZCBkaXNzaW1pbGFyaXRpZXMsIGF0dHJpYnV0ZSBpbXBhY3Qgb24gcHJpbmNpcGxlIGNvbXBvbmVudHMKYGBge3J9CmZ2aXpfcGNhX3ZhcihjbHVzdGVyVGFibGVfcGNhLCBjb2wudmFyID0gImJsYWNrIikKYGBgCnZhcmlhYmxlcyBncm91cGVkIHRpZ2h0bHkgdG9nZXRoZXIgYXJlIHBvc2l0aXZlbHkgcmVsYXRlZCwgb3Bwb3NpdGUgdmFyaWFibGVzIGFyZSBuZWdhdGl2ZWx5IHJlbGF0ZWQsIGFuZCB0aGUgZGlzdGFuY2UgZnJvbSBvcmlnaW4gaXMgaG93IHdlbGwgcmVwcmVzZW50ZWQgdGhlIHZhcmlhYmxlIGlzLgoKIyMjIGNvbnRyaWJ1dGlvbiBvZiBhdHRyaWJ1dGVzIHRvIHByaW5jaXBsZSBjb21wb25lbnRzCmBgYHtyfQpmdml6X2NvczIoY2x1c3RlclRhYmxlX3BjYSwgY2hvaWNlID0gInZhciIsIGF4ZXMgPSAxOjIpCmBgYAoKIyMjIG9wdGltdW0gY2x1c3RlcnMKYGBge3J9CmZhY3RvZXh0cmE6OmZ2aXpfbmJjbHVzdCh4PWNsdXN0ZXJUYWJsZSwKICAgICAgICAgICAgICAgICAgICAgICAgIGttZWFucywKICAgICAgICAgICAgICAgICAgICAgICAgIG1ldGhvZCA9IGMoIndzcyIpKQoKZmFjdG9leHRyYTo6ZnZpel9uYmNsdXN0KHg9Y2x1c3RlclRhYmxlLAogICAgICAgICAgICAgICAgICAgICAgICAga21lYW5zLAogICAgICAgICAgICAgICAgICAgICAgICAgbWV0aG9kID0gYygic2lsaG91ZXR0ZSIpKQpgYGAKCiMjIG1vZGVsaW5nIG9wdGltdW0gY2x1c3RlcnMKYGBge3J9CmNsdXN0ZXJfbW9kZWwgPC0ga21lYW5zKGNsdXN0ZXJUYWJsZSwKICAgICAgICAgICAgICAgICAgICAgICAgY2VudGVycyA9IDMsCiAgICAgICAgICAgICAgICAgICAgICAgIG5zdGFydCA9IDEwLAogICAgICAgICAgICAgICAgICAgICAgICBpdGVyLm1heCA9IDI1KQpjbHVzdGVyX21vZGVsCmBgYAoKIyMgYXBwZW5kaW5nIGRhdGEgd2l0aCByZWxldmFudCBjbHVzdGVycwpgYGB7cn0KdGF4aVJpc2tDbHVzdGVyZWQgPC0gY2JpbmQoY2x1c3RlclRhYmxlLAogICAgICAgICAgICAgICAgICAgICAgICAgICBjbHVzdGVyID0gY2x1c3Rlcl9tb2RlbCRjbHVzdGVyKQpoZWFkKHRheGlSaXNrQ2x1c3RlcmVkKQpgYGAKCiMgdmlzdWFsaXppbmcgY2x1c3RlcnMKYGBge3J9CmZ2aXpfY2x1c3RlcihjbHVzdGVyX21vZGVsLCBmZW1hbGVfY2x1c3RlcmVkLCAKICAgICAgICAgICAgIGVsbGlwc2UudHlwZSA9ICJjb252ZXgiLAogICAgICAgICAgICAgZ2VvbT1jKCJwb2ludCIpLCAKICAgICAgICAgICAgIHBhbGV0dGUgPSAiamNvIiwgCiAgICAgICAgICAgICBnZ3RoZW1lID0gdGhlbWVfY2xhc3NpYygpKSAKcm0obGlzdCA9IGxzKGFsbC5uYW1lcyA9IFRSVUUpKQpgYGAKCg==</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiRGF0YSBBZ2dyZWdhdGlvbiBhbmQgQ2xlYW5pbmciCm91dHB1dDogaHRtbF9ub3RlYm9vawotLS0KYGBge3IgU2V0dXB9CmxpYnJhcnkodGlkeXZlcnNlKQpsaWJyYXJ5KGZzKQpsaWJyYXJ5KHJlYWRyKQpsaWJyYXJ5KGx1YnJpZGF0ZSkKbGlicmFyeShkYXRhLnRhYmxlKQpgYGAKIyBkYXRhIHJlYWRpbmcgCmBgYHtyfQojZ2V0IHRoZSBmaWxlcGF0aCBhbmQgbmFtZXMgb2YgZmlsZXMgaW4gY3VycmVudCBkaXJlY3RvcnkgdGhhdCBlbmRzIHdpdGggLmNzdiAKZGlyX2xzKCcuJykKZmlsZXMgPC0gZGlyX2xzKCcuJywKICAgICAgICAgICAgICAgIHJlZ2V4cCA9ICJcXC5jc3YkIikKCiN0ZXN0aW5nIHRoZSByZWFkIGZ1bmN0aW9uIG9uIHRoZSBmaWxlIHBhdGgKcmVhZF9jc3YoZmlsZXNbMV0pCgojcmVhZGluZyBtdWx0aXBsZSBjc3YgZmlsZXMKZGF0YSA8LSBmaWxlcyAlPiUgCiAgbWFwX2RmcihyZWFkX2NzdikKCiNjaGVja2luZyBmb3IgMTA2IHVuaXF1ZSB2ZWhpY2xlIGlkcwpsZW5ndGgodW5pcXVlKGRhdGEkdmVoaWNsZWlkKSkKCmhlYWQoZGF0YSkKc3VtbWFyeShkYXRhKQpgYGAKCiMgZGF0YSBwcmVwcm9jZXNzaW5nIApgYGB7cn0KI2Zvcm1hdHRpbmcKZGF0YUNsZWFuZWQgPC0gZGF0YSAlPiUgCiAgbXV0YXRlKGlkID0gYXMuY2hhcmFjdGVyKGlkKSkgJT4lIAogIG11dGF0ZShyb2FkX3NwZWVkID0gY29hbGVzY2Uocm9hZF9zcGVlZCwwKSkgJT4lIAogIG11dGF0ZSh0ZXJtaW5hbF9pZCA9IGFzLmNoYXJhY3Rlcih0ZXJtaW5hbF9pZCkpICU+JSAKICBtdXRhdGUoZ3BzX2ZpeF90eXBlID0gYXMuY2hhcmFjdGVyKGdwc19maXhfdHlwZSkpICU+JSAKICBtdXRhdGUoU1BfQ09ERSA9IGFzLmNoYXJhY3RlcihTUF9DT0RFKSkgCiAgCiNOL0EgdmFsdWVzCgojIyBOb3QgaW4gY3VycmVudCBzY29wZQojIC0gbG9uZ2l0dWRlIGFuZCBsYXRpdHVkZQojIC0gU1AgQ29kZQoKIyMgSW4gY3VycmVudCBzY29wZQojIC0gb2RvbWV0ZXIgCiMgLSByb2FkX3NwZWVkCiAgCmRhdGFDbGVhbmVkTkEgPC0gZGF0YUNsZWFuZWQgJT4lIAogICMgLS0tLUkgTiBGIE8tLS0tCiAgIyBzcGVlZCB0byBtZXRlcnMvc2VjCiAgIyB0aW1lIGRpZmZlcmVuY2Ugb2YgY3VycmVudCByb3cgYW5kIHByZXZpb3VzIHJvdyBpLTEKICAjIHNwZWVkIGluIG1ldGVycy9zZWMgKiB0aW1lIGRpZmZlcmVuY2UgPSBkaXN0YW5jZSB0cmF2ZWxlZCBpbiBtZXRlcnMKICAjIHByZXZpb3VzIG9kbyArIGRpc3RhbmNlIHRyYXZlbGVkIGluIG1ldGVycyA9IGN1cnJlbnQgb2RvCiAgIyAtLS0tUiBFIFAgTCBBIEMgRSBOIEEtLS0tCiAgIyByZXBsYWNlX25hKGRhdGFDbGVhbmVkJG9kb21ldGVyLAogICMgICAgICAgICAgKHNwZWVkKjEwMDApLzYwLzYwICogCiAgIyAgICAgICAgICBhcy5udW1lcmljKHRpbWVzdGFtcCAtIGxhZyh0aW1lc3RhbXApKSArIAogICMgICAgICAgICAgbGFnKG9kb21ldGVyKQogICMgLS0tLUMgQSBTIEUgVyBIIEUgTiAtLS0tCiAgbXV0YXRlKAogICAgb2RvbWV0ZXIgPSBjYXNlX3doZW4oCiAgICAgIG9kb21ldGVyID09IE5BX2NoYXJhY3Rlcl8gfgogICAgICAgICAgKHNwZWVkKjEwMDApLzYwLzYwICoKICAgICAgICAgIGFzLm51bWVyaWModGltZXN0YW1wIC0gZHBseXI6OmxhZyh0aW1lc3RhbXApKSArCiAgICAgICAgICBkcGx5cjo6bGFnKG9kb21ldGVyKQogICAgKQogICkKICAKICAKICBzdW1tYXJ5KGRhdGFDbGVhbmVkTkEpCiAgCiAgCgp0ZW1wIDwtIGRhdGFDbGVhbmVkJG9kb21ldGVyICU+JSAKICAgICAgICAgICByZXBsYWNlX25hKG9kb21ldGVyLAogICAgICAgICAgIChzcGVlZCoxMDAwKS82MC82MCAqIAogICAgICAgICAgIGFzLm51bWVyaWModGltZXN0YW1wIC0gbGFnKHRpbWVzdGFtcCkpICsgCiAgICAgICAgICAgbGFnKG9kb21ldGVyKQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICApCmBgYAoK</div>
 
 
 
@@ -1964,7 +1987,7 @@ $(document).ready(function () {
 <!-- code folding -->
 <script>
 $(document).ready(function () {
-  window.initializeSourceEmbed("clustering.Rmd");
+  window.initializeSourceEmbed("data_aggregation.Rmd");
   window.initializeCodeFolding("show" === "show");
 });
 </script>

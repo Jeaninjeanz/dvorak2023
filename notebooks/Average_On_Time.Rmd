@@ -1,3 +1,50 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:9a857d80c6e6735d8824dc8ed63babfd9488e98ee4a7bca856df597c2296fd2a
-size 1002
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r Setup}
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+```
+
+Read in data
+```{r}
+data <- read_rds("../data/data_aggregated.rds")
+```
+
+Find all states of ON and OFF
+```{r}
+
+data_Fil <- data %>% 
+  select(timestamp, vehicleid, event_description, odometer) %>%
+  filter(event_description %in% c("Ign ON", "Ign OFF"))
+
+```
+
+Maths
+```{r}
+
+#Only read time_ON WHERE Ign OFF!!!
+dataMath <- data_Fil %>% 
+   mutate(time_ON_Sec = timestamp - lag(timestamp, default = first(timestamp)), 
+          distance_KM = (odometer - lag(odometer, default = first(odometer)))/1000, 
+          average_speed_KMpH = distance_KM/((as.numeric(time_ON_Sec))/3600))
+
+#Removing duplicates!!
+dataMath = dataMath[!duplicated(dataMath$timestamp),]
+
+#Dropping all rows with negative values:
+dataMath <- dataMath[as.numeric(dataMath$time_ON_Sec) >= 0, ]
+dataMath <- dataMath[dataMath$distance_KM >= 0, ]
+
+#average_speed in KM/H !!!!
+dataMath
+
+saveRDS(dataMath, file = "../data/average_speed_intervals.rds")
+```
+
+
+
+

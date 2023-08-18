@@ -20,7 +20,7 @@ library(FactoMineR)
 
 ```{r}
 averageTimeOn <- read_rds("Data/average_speed_intervals.rds")
-taxiAnalysis <- read_rds("Data/TaxiRiskAnalysis-new.rds")
+taxiAnalysis <- read_rds("Data/TaxiRiskAnalysis.rds")
 averageTimeOn
 taxiAnalysis
 ```

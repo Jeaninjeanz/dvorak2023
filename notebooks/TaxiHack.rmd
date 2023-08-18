@@ -20,7 +20,7 @@ library(factoextra)
 #line to be used when running with all data
 #name is due to how the origional code was written and im too lazy to fix it 
 ```{r}
-firstTaxi <- read_rds("all_data.rds")
+firstTaxi <- read_rds("../data/data_aggregated.rds")
 firstTaxi <- firstTaxi %>% 
   filter(gps_fix_type == 3)
 ```

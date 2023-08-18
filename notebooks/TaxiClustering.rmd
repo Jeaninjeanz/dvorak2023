@@ -1,3 +1,153 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:b062b03559a1b14c607ba8c1b74ff7bc228f9492cf069c04b193d42a84b7ed23
-size 254
+---
+title: "TaxiCluster"
+output: html_document
+date: "2023-08-15"
+---
+# Clustering 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(caret)
+library(factoextra)
+library(corrr)
+library(ggcorrplot)
+library(FactoMineR)
+```
+
+## reading in data
+
+```{r}
+averageTimeOn <- read_rds("Data/average_speed_intervals.rds")
+taxiAnalysis <- read_rds("Data/TaxiRiskAnalysis-new.rds")
+averageTimeOn
+taxiAnalysis
+```
+
+## preprocessing
+### data selection
+getting the time spent on from the table by removing the time spent off from the dataset, also selecting the relevant columns
+```{r}
+averageTimeOnTotal <- averageTimeOn %>% 
+  select(vehicleid, time_ON_Sec, distance_KM, average_speed_KMpH,event_description) %>% 
+  filter(event_description == "Ign OFF")
+  
+
+averageTimeOnTotal
+```
+
+### taxi averages
+averaging the data out to be used for clustering analysis
+
+```{r}
+averageTimeOnTotalAvg <- averageTimeOnTotal %>% 
+  group_by(vehicleid) %>% 
+  summarise(time_ON_SecAvg = mean(as.numeric(time_ON_Sec)), 
+            distance_KMAvg = mean(distance_KM), 
+            average_speed_KMpHAvg = mean(average_speed_KMpH)) 
+
+averageTimeOnTotalAvg
+```
+
+### join operation
+joining the two tables to allow for clustering 
+- removed vehicle id's
+```{r}
+clusterTable <- taxiAnalysis %>% 
+  left_join(averageTimeOnTotalAvg, taxiAnalysis, by = "vehicleid") %>% 
+  select(-vehicleid)
+clusterTable
+
+#averaging N/As
+clusterTable <- clusterTable %>% 
+  mutate_if(is.numeric, ~replace_na(.,mean(., na.rm = TRUE)))
+
+```
+
+### normalizing
+```{r}
+clusterTable_normalized <- scale(clusterTable)
+```
+
+## principle component analysis
+### inspecting pairwise combinations
+```{r}
+pairs(clusterTable_normalized)
+```
+
+### inspecting correlation
+```{r}
+clusterTable_corr_matrix <- cor(clusterTable_normalized)
+ggcorrplot(clusterTable_corr_matrix)
+```
+
+### inspecting covariance
+```{r}
+cov(clusterTable_normalized)
+```
+
+### importance of components
+```{r}
+clusterTable_pca <- princomp(clusterTable_corr_matrix)
+summary(clusterTable_pca)
+```
+
+### relation of components to columns
+```{r}
+clusterTable_pca$loadings[, 1:2]
+```
+
+## visualizations
+### importance of principle components
+```{r}
+fviz_eig(clusterTable_pca, addlabels = TRUE)
+```
+
+### principle components similarities and dissimilarities, attribute impact on principle components
+```{r}
+fviz_pca_var(clusterTable_pca, col.var = "black")
+```
+variables grouped tightly together are positively related, opposite variables are negatively related, and the distance from origin is how well represented the variable is.
+
+### contribution of attributes to principle components
+```{r}
+fviz_cos2(clusterTable_pca, choice = "var", axes = 1:2)
+```
+
+### optimum clusters
+```{r}
+factoextra::fviz_nbclust(x=clusterTable,
+                         kmeans,
+                         method = c("wss"))
+
+factoextra::fviz_nbclust(x=clusterTable,
+                         kmeans,
+                         method = c("silhouette"))
+```
+
+## modeling optimum clusters
+```{r}
+cluster_model <- kmeans(clusterTable,
+                        centers = 3,
+                        nstart = 10,
+                        iter.max = 25)
+cluster_model
+```
+
+## appending data with relevant clusters
+```{r}
+taxiRiskClustered <- cbind(clusterTable,
+                           cluster = cluster_model$cluster)
+head(taxiRiskClustered)
+```
+
+# visualizing clusters
+```{r}
+fviz_cluster(cluster_model, female_clustered, 
+             ellipse.type = "convex",
+             geom=c("point"), 
+             palette = "jco", 
+             ggtheme = theme_classic()) 
+rm(list = ls(all.names = TRUE))
+```

@@ -6,9 +6,46 @@ output: html_notebook
 
 ```{r Setup}
 library(tidyverse)
+library(fs)
+library(raster)
+library(leaflet)
+library(ggspatial)
 ```
 
 ```{r}
-
+data <- read_rds("../data/data_aggregated.rds")
+head(data)
+unique(data$PR_NAME)
 ```
 
+#select and filter
+```{r}
+data_geo <- data %>% 
+  #filter(vehicleid %in% c("104804470")) %>% 
+  select(timestamp, vehicleid, event_description, coordinate_latitude, coordinate_longitude)
+  
+
+data_geo
+```
+
+# convert to spatial dataframe
+```{r}
+data_spatial <- st_as_sf(
+  data_geo,
+  coords = c("coordinate_longitude","coordinate_latitude"),
+  crs = 4326
+)
+```
+
+# initial plotting
+```{r}
+data_spatial %>% 
+  ggplot() +
+  geom_sf()+
+  labs(title = "driving activity of ID 104804470")+
+  xlab("Longitude")+
+  ylab("Lattitude") +
+  ggspatial::annotation_north_arrow(location = "br")+
+  ggspatial::annotation_scale(location = "bl")
+  
+```

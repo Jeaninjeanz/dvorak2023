@@ -11,31 +11,35 @@ library(caret)
 library(factoextra)
 ```
 
-## R Markdown
 
+#Reading in both the claims data and the taxi data
 ```{r}
 claims <- read.csv("claims_data (1).csv")
 taxis <- read_rds("all_data.rds")
 claims
 ```
+#filtering the claims data to only the taxis that have submitted claims
 ```{r}
 claimed <- claims %>% 
   filter(number.of.claims > 0) %>% 
   filter(vehicleid != 155517428)
 claimed
 ```
+#removing rows where the gps is not accurate, joining the two tables
 ```{r}
 claimed2 <- claimed %>% 
   inner_join(taxis, claimed2, by = "vehicleid") %>% 
   filter(gps_fix_type == 3)
 claimed2
 ```
+#removing the taxis that have not laid a claim, and filtering down the data to the useful columns
 ```{r}
 oneclaim <- claimed2 %>% 
   filter(number.of.claims > 0) %>% 
   select(vehicleid, timestamp, speed, linear_g, lateral_g)
 oneclaim
 ```
+#getting the greaters loinear acceleration in a negetive direction for each of the taxis
 ```{r}
 minLinear <- oneclaim %>% 
   group_by(vehicleid) %>% 
@@ -47,6 +51,7 @@ minLinear <- oneclaim %>%
   select(!"vehicleid.y")
 minLinear
 ```
+#getting the maximum lateral g foirce for each of the taxis
 ```{r}
 maxLat <- oneclaim %>% 
   group_by(vehicleid) %>% 
@@ -58,6 +63,7 @@ maxLat <- oneclaim %>%
   select(!"vehicleid.y")
 maxLat
 ```
+#getting the greatesty linear acceleration in the positive direction for each taxi
 ```{r}
 maxLinear <- oneclaim %>% 
   group_by(vehicleid) %>% 
@@ -69,7 +75,7 @@ maxLinear <- oneclaim %>%
   select(!"vehicleid.y")
 maxLinear
 ```
-
+#looking at the specific timestamps for each event for each taxi
 ```{r}
 joinTable <- minLinear %>% 
   left_join(maxLat, minLinear, by = "vehicleid") %>% 
@@ -80,6 +86,7 @@ joinTable <- minLinear %>%
   distinct(vehicleid, MinLinTimestamp, MaxLatTimestamp,  maxlinTimestamp)
 joinTable
 ```
+#creating a list of times where the max and mins are closly togeter indication an accident on the road
 ```{r}
 joinTableTimes <- joinTable %>% 
   select(vehicleid, MinLinTimestamp, maxlinTimestamp,  MaxLatTimestamp) %>% 
@@ -89,9 +96,10 @@ joinTableTimes <- joinTable %>%
   filter((linearDifference < 300 & linearDifference > -300) | (MinLinearLateralDifference < 5 & MinLinearLateralDifference >-5) | (MaxLinearLateralDifference < 0.833 & MaxLinearLateralDifference >-0.833))
 joinTableTimes
 ```
+#Combining the above table with the claimed table to see the number of claims for each taxi in the list
 ```{r}
 joinTablesClaims <- joinTableTimes %>% 
-  left_join(claimed, joinTableTimes, by = "vehicleid")
+  left_join(claimed, joinTableTimes, by = "vehicleidA")
 joinTablesClaims
 ```
 

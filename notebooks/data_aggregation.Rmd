@@ -8,6 +8,7 @@ library(fs)
 library(readr)
 library(lubridate)
 library(data.table)
+library(zoo)
 ```
 
 # data reading 
@@ -36,49 +37,19 @@ summary(data)
 #formatting
 dataCleaned <- data %>% 
   mutate(id = as.character(id)) %>% 
-  mutate(road_speed = coalesce(road_speed,0)) %>% 
+  mutate(road_speed = coalesce(road_speed,60)) %>% 
   mutate(terminal_id = as.character(terminal_id)) %>% 
+  mutate(vehicleid = as.character(vehicleid)) %>% 
   mutate(gps_fix_type = as.character(gps_fix_type)) %>% 
   mutate(SP_CODE = as.character(SP_CODE)) 
   
 #N/A values
-
-## Not in current scope
-# - longitude and latitude
-# - SP Code
-
-## In current scope
-# - odometer 
-# - road_speed
-  
 dataCleanedNA <- dataCleaned %>% 
-  # ---------------------------
-  # speed to meters/sec
-  # time difference of current row and previous row i-1
-  # speed in meters/sec * time difference = distance traveled in meters
-  # previous odo + distance traveled in meters = current odo
-  # mutate(odometer = replace_na(
-  #          ((speed*3.6) *
-  #          as.numeric(timestamp - lag(timestamp))) +
-  #          lag(odometer)
-  #                             )
-  #       )
-  
-
-  mutate(
-    odometer = case_when(
-      odometer == NA ~
-          ((speed*3.6) *
-          as.numeric(timestamp - dplyr::lag(timestamp))) +
-          dplyr::lag(odometer)
-    )
-  )
-  
-  
-  summary(dataCleanedNA)
-  
-temp <- (dataCleaned$speed[500] * 3.6) * as.numeric(dataCleaned$timestamp[500] - lag(dataCleaned$timestamp)[500]) + lag(dataCleaned$odometer)[500]
+ na.locf(na.rm = FALSE)
 
 ```
-
+# saving
+```{r}
+saveRDS(dataCleanedNA, "../data/data_aggregated.rds")
+```
 

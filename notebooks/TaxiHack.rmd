@@ -20,7 +20,7 @@ library(factoextra)
 #line to be used when running with all data
 #name is due to how the origional code was written and im too lazy to fix it 
 ```{r}
-firstTaxi <- read_rds("../data/data_aggregated.rds")
+firstTaxi <- read_rds("data_aggregated (1).rds")
 firstTaxi <- firstTaxi %>% 
   filter(gps_fix_type == 3)
 ```
@@ -93,6 +93,10 @@ summary of the table above
 ```{r}
 summary(firstTaxiSpeedAvg1)
 ```
+```{r}
+length(unique(firstTaxiSpeed$`vehicleid`))
+```
+
 #Assigning a risk value to each average speed difference of each taxi in each area
 
 #Taxi A in area X has a speed risk rating of Q
@@ -261,6 +265,16 @@ firstTaxiRisk <- firstTaxiSpeedRiskAvg %>%
 firstTaxiRisk
 ```
 ```{r}
-saveRDS(firstTaxiRisk, file = "../data/TaxiRiskAnalysis.rds") 
+claimsRisk <- read_rds("claimsRiskFinal.rds")
+claimsRisk
+```
+```{r}
+combineRisk <- firstTaxiRisk %>% 
+  left_join(claimsRisk, firstTaxiRisk, by = "vehicleid")
+combineRisk
+```
+
+```{r}
+saveRDS(combineRisk, file = "TaxiRiskAnalysis.rds") 
 ```
 

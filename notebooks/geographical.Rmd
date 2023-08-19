@@ -14,6 +14,7 @@ library(rnaturalearth)
 library(rnaturalearthdata)
 library(maps)
 library(osrm)
+library(tidygeocoder)
 ```
 
 ```{r}
@@ -26,15 +27,30 @@ unique(data$PR_NAME)
 ```{r}
 data_geo <- data %>% 
   #filter(`PR_NAME` %in% c("Western Cape")) %>% 
-  dplyr::select(`timestamp`, `vehicleid`, `event_description`, `coordinate_latitude`, `coordinate_longitude`)
+  dplyr::select(`timestamp`, `vehicleid`, `event_description`, `coordinate_latitude`, `coordinate_longitude`) %>% 
+  mutate(icon = 
+           case_when(
+            event_description == "Power On" ~ "car-on",
+            event_description == "Idle Start" ~ "hand",
+            event_description == "ROAM_Start" ~ "satellite-dish",
+            event_description == "Speeding" ~ "gauge-high",
+            event_description == "Speeding end" ~ "gauge",
+            event_description == "GPS_Lock" ~ "location-crosshairs",
+            event_description == "GPS_Lost" ~ "circle-xmark",
+            event_description == "Ign ON" ~ "exclamation")) %>% 
+  drop_na(icon)
 
-data_geo_event <- data %>% 
-  #filter(`PR_NAME` %in% c("Western Cape")) %>% 
-  dplyr::select(`timestamp`, `vehicleid`, `event_description`, `coordinate_latitude`, `coordinate_longitude`)
+data_geo_speeding <- data_geo %>% 
+  filter(event_description %in% c("Speeding"))
 
+data_geo_GPS <- data_geo %>% 
+  filter(event_description %in% c("GPS_Lock","GPS_Lost"))
 
-data_geo
-data_geo_event
+data_geo_Ign <- data_geo %>% 
+  filter(event_description %in% c("Ign ON"))
+
+data_geo_Idle <- data_geo %>% 
+  filter(event_description %in% c("Idle Start"))
 ```
 
 # convert to spatial dataframe
@@ -44,64 +60,135 @@ data_spatial <- st_as_sf(
   coords = c("coordinate_longitude","coordinate_latitude"),
   crs = 4326
 )
+
+data_geo_speeding <- st_as_sf(
+  data_geo_speeding,
+  coords = c("coordinate_longitude","coordinate_latitude"),
+  crs = 4326
+)
+
+data_geo_GPS <- st_as_sf(
+  data_geo_GPS,
+  coords = c("coordinate_longitude","coordinate_latitude"),
+  crs = 4326
+)
+
+data_geo_Ign <- st_as_sf(
+  data_geo_GPS,
+  coords = c("coordinate_longitude","coordinate_latitude"),
+  crs = 4326
+)
+
+data_geo_Idle <- st_as_sf(
+  data_geo_GPS,
+  coords = c("coordinate_longitude","coordinate_latitude"),
+  crs = 4326
+)
 ```
 
 # from points to lines
 ```{r}
-data_spatial <- data_spatial %>%
-  group_by(vehicleid) %>%
-  arrange(timestamp) %>% 
-  summarise(do_union = F)
-
-routes_spatial <- data_spatial %>% 
-  st_cast(to = "LINESTRING")
-
-routes_spatial = routes_spatial %>% 
-  mutate(distance = st_length(.))
+# route code - slightly buggy
+# data_spatial <- data_spatial %>%
+#   group_by(vehicleid) %>%
+#   arrange(timestamp) %>% 
+#   summarise(do_union = F)
+# 
+# routes_spatial <- data_spatial %>% 
+#   st_cast(to = "LINESTRING")
+# 
+# routes_spatial = routes_spatial %>% 
+#   mutate(distance = st_length(.))
 ```
 
 # initial plotting
-```{r}
+```{r height = 20, width = 20}
+#world <- ne_countries(country = "South Africa", returnclass = "sf") %>%    st_set_crs(4326)
 
-world <- ne_countries(country = "South Africa", returnclass = "sf") %>% 
-  st_set_crs(4326)
-class(world)
 
-data_spatial %>%   
-  ggplot()+
-  geom_sf(color=data_geo$vehicleid,size = 0.05)+
-  #geom_sf(data = world)+
-  labs(title = "driving activity of ID 104804470")+
-  xlab("Longitude")+
-  ylab("Lattitude") +
-  ggspatial::annotation_north_arrow(location = "br")+
-  ggspatial::annotation_scale(location = "bl") 
+# 
+# data_geo_events %>%   
+#   ggplot()+
+#   geom_sf(data = world)+
+#   geom_sf(aes(color=event_description),size = 0.05)+
+#   labs(title = "GPS Events")+
+#   xlab("Longitude")+
+#   ylab("Lattitude") +
+#   ggspatial::annotation_north_arrow(location = "br")+
+#   ggspatial::annotation_scale(location = "bl") 
   
   
 ```
 
-# country map
+# GPS Speeding Log
 ```{r}
+# initial attempt
 # ggplot() +
 #   geom_sf(data=world, lwd=0.2) +
 #   geom_sf(data=routes_spatial, color =vehicleid)
 
-#leaflet  code that doesnt seem to work
- d <- world.cities
- 
- d <- d[which(d$country.etc == "South Africa"),]
- 
- d <- st_as_sf(d,coords = c("long","lat"))
- 
- st_crs(d) <- 4326
- 
- leaflet(data_spatial) %>%
-   addTiles() %>% 
-   addMarkers()
+# 
+#  d <- world.cities
+#  
+#  d <- d[which(d$country.etc == "South Africa"),]
+#  
+#  d <- st_as_sf(d,coords = c("long","lat"))
+#  
+#  st_crs(d) <- 4326
+#  
 
-#geom_sf(data_geo, aes(coordinate_longitude, coordinate_lattitude),color=data_geo$vehicleid,size = 0.05)
-  
-  
+my_icons <- awesomeIcons(icon = data_geo$icon,
+                         #markerColor = data_spatial$vehicleid,
+                         library = "fa")
+ 
+st_coordinates(data_geo_events$geometry)[, "X"]
+
+data_geo_speeding %>% 
+  leaflet() %>%
+  setView(lng = 25, lat = -30, zoom = 5) %>% 
+  addProviderTiles("Esri.WorldGrayCanvas", options = tileOptions(minZoom=5, maxZoom=16))%>%  
+  addAwesomeMarkers(lng = st_coordinates(data_geo_speeding$geometry)[, "X"], 
+                    lat = st_coordinates(data_geo_speeding$geometry)[, "Y"],
+                    label = ~vehicleid,
+                    clusterOptions = markerClusterOptions()) 
 
 ```
 
+ # GPS Lost/Lock
+```{r}
+data_geo_GPS %>% 
+  leaflet() %>%
+  setView(lng = 25, lat = -30, zoom = 5) %>% 
+  addProviderTiles("Esri.WorldGrayCanvas", options = tileOptions(minZoom=5, maxZoom=16))%>%  
+  addAwesomeMarkers(lng = st_coordinates(data_geo_GPS$geometry)[, "X"], 
+                    lat = st_coordinates(data_geo_GPS$geometry)[, "Y"],
+                    label = ~event_description,
+                    clusterOptions = markerClusterOptions()) 
+```
+
+# ignition on
+```{r}
+data_geo_Ign %>% 
+  leaflet() %>%
+  setView(lng = 25, lat = -30, zoom = 5) %>% 
+  addProviderTiles("Esri.WorldGrayCanvas", options = tileOptions(minZoom=5, maxZoom=16))%>%  
+  addAwesomeMarkers(lng = st_coordinates(data_geo_Ign$geometry)[, "X"], 
+                    lat = st_coordinates(data_geo_Ign$geometry)[, "Y"],
+                    label = ~vehicleid,
+                    clusterOptions = markerClusterOptions()) 
+```
+ 
+ # idling
+```{r}
+
+data_geo_Idle %>% 
+  leaflet() %>%
+  setView(lng = 25, lat = -30, zoom = 5) %>% 
+  addProviderTiles("Esri.WorldGrayCanvas", options = tileOptions(minZoom=5, maxZoom=16))%>%  
+  addAwesomeMarkers(lng = st_coordinates(data_geo_Idle$geometry)[, "X"], 
+                    lat = st_coordinates(data_geo_Idle$geometry)[, "Y"],
+                    label = ~vehicleid,
+                    clusterOptions = markerClusterOptions()) 
+```
+ 
+ 

@@ -21,6 +21,8 @@ library(FactoMineR)
 ```{r}
 averageTimeOn <- read_rds("../data/average_speed_intervals.rds")
 taxiAnalysis <- read_rds("../data/TaxiRiskAnalysis.rds")
+data_shift <- read_rds("../data/shift_risk.rds") %>% 
+  drop_na()
 averageTimeOn
 taxiAnalysis
 ```
@@ -54,9 +56,10 @@ averageTimeOnTotalAvg
 joining the two tables to allow for clustering 
 - removed vehicle id's
 ```{r}
+taxiAnalysis <- right_join(data_shift,taxiAnalysis, by = "vehicleid" )
+
 clusterTable <- taxiAnalysis %>% 
-  left_join(averageTimeOnTotalAvg, taxiAnalysis, by = "vehicleid") %>% 
-  select(-vehicleid)
+  left_join(averageTimeOnTotalAvg, taxiAnalysis, by = "vehicleid") 
 clusterTable
 
 #averaging N/As
@@ -67,7 +70,7 @@ clusterTable <- clusterTable %>%
 
 ### normalizing
 ```{r}
-clusterTable_normalized <- scale(clusterTable)
+clusterTable_normalized <- clusterTable
 ```
 
 ## principle component analysis
@@ -130,11 +133,11 @@ factoextra::fviz_nbclust(x=clusterTable_normalized,
 
 ## modeling optimum clusters
 ```{r}
-set.seed(42069)
+
 cluster_model <- kmeans(clusterTable_normalized,
-                        centers = 7,
+                        centers = 3,
                         nstart = 15,
-                        iter.max = 20)
+                        iter.max = 100)
 cluster_model
 ```
 

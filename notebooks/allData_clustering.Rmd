@@ -5,6 +5,7 @@ output: html_notebook
 
 ```{r Setup}
 library(tidyverse)
+library(dplyr)
 library(ggplot2)
 library(caret)
 library(factoextra)
@@ -12,6 +13,7 @@ library(corrr)
 library(ggcorrplot)
 library(FactoMineR)
 library(doParallel)
+library(zoo)
 ```
 
 # use more cpu cores
@@ -21,22 +23,36 @@ registerDoParallel(cores = detectCores() - 1)
 
 # read data
 ```{r}
-data <- read_rds("../data/data_aggregated.rds")
-head(data)
-data2 <-  data %>%
-  select(-partition_date, -id, -vehicleid,-timestamp, -ignitionState, -event_description, -terminal_id, -recieved_ts, -gps_fix_type,   -gps_accuracy, -SP_CODE,-SP_NAME, -MP_NAME, -MN_NAME, -DC_NAME, -PR_NAME, -created_ts, -country_name)
-head(data2)
+#data <- read_rds("../data/data_aggregated.rds")
+dataRisk <- read_rds("../data/TaxiRiskAnalysis.rds")
+data_shift <- read_rds("../data/shift_risk.rds") %>% 
+  drop_na()
+
+#data2 <-  data %>%
+#  filter(gps_fix_type == 3) %>% 
+#  dplyr::select(-partition_date, -id,-timestamp, -ignitionState, -event_description, -terminal_id, -recieved_ts, -gps_fix_type,   -gps_accuracy, -SP_CODE,-SP_NAME, #-MP_NAME, -MN_NAME, -DC_NAME, -PR_NAME, -created_ts, -country_name)
+
+data_merged <- right_join(data_shift,dataRisk, by = "vehicleid" )
+#data_merged <- merge(data, data_merged, all = TRUE)
+
+data_merged <- data_merged %>% 
+  dplyr::select(-vehicleid) 
+
+summary(data_merged)
 ```
 
 # normalizing
 ```{r}
-data_norm <- scale(data2)
+data_norm <- scale(data_merged) %>% 
+ na.locf(na.rm = FALSE)
+
+summary(data_norm)
 ```
 
 # principle component analysis
 ## inspecting pairwise combinations
 ```{r}
-pairs(data_norm)
+#pairs(data_norm)
 ```
 
 ## inspecting correlation
@@ -79,7 +95,7 @@ fviz_cos2(data_norm_pca, choice = "var", axes = 1:2)
 
 ### optimum clusters
 ```{r}
-factoextra::fviz_nbclust(x=data,
+factoextra::fviz_nbclust(x=data_norm,
                          kmeans,
                          method = c("wss"))
 
@@ -90,9 +106,20 @@ factoextra::fviz_nbclust(x=data_norm,
 
 
 ```{r}
+
 cluster_model <- kmeans(data_norm,
-                        centers = 3,
-                        nstart = 10,
+                        centers = 7,
+                        nstart = 25,
                         iter.max = 25)
+cluster_model
 ```
 
+# visualizing clusters
+```{r}
+fviz_cluster(cluster_model, data_norm, 
+             ellipse.type = "convex",
+             geom=c("point"), 
+             palette = "jco", 
+             ggtheme = theme_classic()) 
+
+```

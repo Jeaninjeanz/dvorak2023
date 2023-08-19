@@ -19,8 +19,8 @@ library(FactoMineR)
 ## reading in data
 
 ```{r}
-averageTimeOn <- read_rds("Data/average_speed_intervals.rds")
-taxiAnalysis <- read_rds("Data/TaxiRiskAnalysis.rds")
+averageTimeOn <- read_rds("../data/average_speed_intervals.rds")
+taxiAnalysis <- read_rds("../data/TaxiRiskAnalysis.rds")
 averageTimeOn
 taxiAnalysis
 ```
@@ -80,10 +80,12 @@ pairs(clusterTable_normalized)
 ```{r}
 clusterTable_corr_matrix <- cor(clusterTable_normalized)
 ggcorrplot(clusterTable_corr_matrix)
+
 ```
 
 ### inspecting covariance
 ```{r}
+
 cov(clusterTable_normalized)
 ```
 
@@ -117,37 +119,38 @@ fviz_cos2(clusterTable_pca, choice = "var", axes = 1:2)
 
 ### optimum clusters
 ```{r}
-factoextra::fviz_nbclust(x=clusterTable,
+factoextra::fviz_nbclust(x=clusterTable_normalized,
                          kmeans,
                          method = c("wss"))
 
-factoextra::fviz_nbclust(x=clusterTable,
+factoextra::fviz_nbclust(x=clusterTable_normalized,
                          kmeans,
                          method = c("silhouette"))
 ```
 
 ## modeling optimum clusters
 ```{r}
-cluster_model <- kmeans(clusterTable,
-                        centers = 3,
-                        nstart = 10,
-                        iter.max = 25)
+set.seed(42069)
+cluster_model <- kmeans(clusterTable_normalized,
+                        centers = 7,
+                        nstart = 15,
+                        iter.max = 20)
 cluster_model
 ```
 
 ## appending data with relevant clusters
 ```{r}
-taxiRiskClustered <- cbind(clusterTable,
+taxiRiskClustered <- cbind(clusterTable_normalized,
                            cluster = cluster_model$cluster)
 head(taxiRiskClustered)
 ```
 
 # visualizing clusters
 ```{r}
-fviz_cluster(cluster_model, female_clustered, 
+fviz_cluster(cluster_model, clusterTable_normalized, 
              ellipse.type = "convex",
              geom=c("point"), 
              palette = "jco", 
              ggtheme = theme_classic()) 
-rm(list = ls(all.names = TRUE))
+
 ```

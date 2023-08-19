@@ -1,0 +1,98 @@
+---
+title: "All data clustering"
+output: html_notebook
+---
+
+```{r Setup}
+library(tidyverse)
+library(ggplot2)
+library(caret)
+library(factoextra)
+library(corrr)
+library(ggcorrplot)
+library(FactoMineR)
+library(doParallel)
+```
+
+# use more cpu cores
+```{r}
+registerDoParallel(cores = detectCores() - 1)
+```
+
+# read data
+```{r}
+data <- read_rds("../data/data_aggregated.rds")
+head(data)
+data2 <-  data %>%
+  select(-partition_date, -id, -vehicleid,-timestamp, -ignitionState, -event_description, -terminal_id, -recieved_ts, -gps_fix_type,   -gps_accuracy, -SP_CODE,-SP_NAME, -MP_NAME, -MN_NAME, -DC_NAME, -PR_NAME, -created_ts, -country_name)
+head(data2)
+```
+
+# normalizing
+```{r}
+data_norm <- scale(data2)
+```
+
+# principle component analysis
+## inspecting pairwise combinations
+```{r}
+pairs(data_norm)
+```
+
+## inspecting correlation
+```{r}
+data_norm_corr_matrix <- cor(data_norm)
+ggcorrplot(data_norm_corr_matrix)
+```
+
+## inspecting covariance
+```{r}
+cov(data_norm)
+```
+
+## importance of components
+```{r}
+data_norm_pca <- princomp(data_norm_corr_matrix)
+summary(data_norm_pca)
+```
+
+## relation of components to columns
+```{r}
+data_norm_pca$loadings[, 1:2]
+```
+
+# visualizations
+## importance of principle components
+```{r}
+fviz_eig(data_norm_pca, addlabels = TRUE)
+```
+
+## principle components similarities and dissimilarities, attribute impact on principle components
+```{r}
+fviz_pca_var(data_norm_pca, col.var = "black")
+```
+
+## contribution of attributes to principle components
+```{r}
+fviz_cos2(data_norm_pca, choice = "var", axes = 1:2)
+```
+
+### optimum clusters
+```{r}
+factoextra::fviz_nbclust(x=data,
+                         kmeans,
+                         method = c("wss"))
+
+factoextra::fviz_nbclust(x=data_norm,
+                         kmeans,
+                         method = c("silhouette"))
+```
+
+
+```{r}
+cluster_model <- kmeans(data_norm,
+                        centers = 3,
+                        nstart = 10,
+                        iter.max = 25)
+```
+

@@ -27,9 +27,14 @@ unique(data$PR_NAME)
 data_geo <- data %>% 
   #filter(`PR_NAME` %in% c("Western Cape")) %>% 
   dplyr::select(`timestamp`, `vehicleid`, `event_description`, `coordinate_latitude`, `coordinate_longitude`)
-  
+
+data_geo_event <- data %>% 
+  #filter(`PR_NAME` %in% c("Western Cape")) %>% 
+  dplyr::select(`timestamp`, `vehicleid`, `event_description`, `coordinate_latitude`, `coordinate_longitude`)
+
 
 data_geo
+data_geo_event
 ```
 
 # convert to spatial dataframe
@@ -77,21 +82,22 @@ data_spatial %>%
 
 # country map
 ```{r}
-ggplot() +
-  geom_sf(data=world, lwd=0.2) +
-  geom_sf(data=routes_spatial, color =vehicleid)
+# ggplot() +
+#   geom_sf(data=world, lwd=0.2) +
+#   geom_sf(data=routes_spatial, color =vehicleid)
 
- # additional code that doesnt seem to work
- # d <- world.cities
- # 
- # d <- d[which(d$country.etc == "South Africa"),]
- # 
- # d <- st_as_sf(d,coords = c("long","lat"))
- # 
- # st_crs(d) <- 4326
- # 
- # leaflet(d) %>%
- #   addTiles() 
+#leaflet  code that doesnt seem to work
+ d <- world.cities
+ 
+ d <- d[which(d$country.etc == "South Africa"),]
+ 
+ d <- st_as_sf(d,coords = c("long","lat"))
+ 
+ st_crs(d) <- 4326
+ 
+ leaflet(data_spatial) %>%
+   addTiles() %>% 
+   addMarkers()
 
 #geom_sf(data_geo, aes(coordinate_longitude, coordinate_lattitude),color=data_geo$vehicleid,size = 0.05)
   

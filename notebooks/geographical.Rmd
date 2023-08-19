@@ -6,10 +6,12 @@ output: html_notebook
 
 ```{r Setup}
 library(tidyverse)
-library(fs)
+library(sf)
 library(raster)
 library(leaflet)
 library(ggspatial)
+library(rnaturalearth)
+library(rnaturalearthdata)
 ```
 
 ```{r}
@@ -21,8 +23,8 @@ unique(data$PR_NAME)
 #select and filter
 ```{r}
 data_geo <- data %>% 
-  #filter(vehicleid %in% c("104804470")) %>% 
-  select(timestamp, vehicleid, event_description, coordinate_latitude, coordinate_longitude)
+  #filter(`vehicleid` %in% c("104804470")) %>% 
+  dplyr::select(`timestamp`, `vehicleid`, `event_description`, `coordinate_latitude`, `coordinate_longitude`)
   
 
 data_geo
@@ -39,13 +41,25 @@ data_spatial <- st_as_sf(
 
 # initial plotting
 ```{r}
-data_spatial %>% 
-  ggplot() +
-  geom_sf()+
+
+world <- ne_states(country = "South Africa", returnclass = "sf")
+class(world)
+
+data_spatial %>%   
+  ggplot()+
+  geom_sf(fill='red')+
+  geom_sf(data = world)+
   labs(title = "driving activity of ID 104804470")+
   xlab("Longitude")+
   ylab("Lattitude") +
   ggspatial::annotation_north_arrow(location = "br")+
-  ggspatial::annotation_scale(location = "bl")
+  ggspatial::annotation_scale(location = "bl") 
+  
   
 ```
+
+# country map
+```{r}
+
+```
+

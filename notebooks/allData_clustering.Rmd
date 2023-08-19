@@ -74,6 +74,25 @@ fviz_pca_var(data_norm_pca, col.var = "black")
 
 ## contribution of attributes to principle components
 ```{r}
-fviz_cos2(clusterTable_pca, choice = "var", axes = 1:2)
+fviz_cos2(data_norm_pca, choice = "var", axes = 1:2)
+```
+
+### optimum clusters
+```{r}
+factoextra::fviz_nbclust(x=data,
+                         kmeans,
+                         method = c("wss"))
+
+factoextra::fviz_nbclust(x=data_norm,
+                         kmeans,
+                         method = c("silhouette"))
+```
+
+
+```{r}
+cluster_model <- kmeans(data_norm,
+                        centers = 3,
+                        nstart = 10,
+                        iter.max = 25)
 ```
 

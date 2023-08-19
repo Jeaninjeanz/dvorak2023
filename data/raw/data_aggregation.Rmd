@@ -1,3 +1,55 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:02bfc888473bce6469d1f40218f1fd262f0f38a8699a207fd6dc15e49c5f07f3
-size 1947
+---
+title: "Data Aggregation and Cleaning"
+output: html_notebook
+---
+```{r Setup}
+library(tidyverse)
+library(fs)
+library(readr)
+library(lubridate)
+library(data.table)
+library(zoo)
+```
+
+# data reading 
+```{r}
+#get the filepath and names of files in current directory that ends with .csv 
+dir_ls('.')
+files <- dir_ls('.',
+                regexp = "\\.csv$")
+
+#testing the read function on the file path
+read_csv(files[1])
+
+#reading multiple csv files
+data <- files %>% 
+  map_dfr(read_csv)
+
+#checking for 106 unique vehicle ids
+length(unique(data$vehicleid))
+
+head(data)
+summary(data)
+```
+
+# data preprocessing 
+```{r}
+#formatting
+dataCleaned <- data %>% 
+  mutate(id = as.character(id)) %>% 
+  mutate(road_speed = coalesce(road_speed,60)) %>% 
+  mutate(terminal_id = as.character(terminal_id)) %>% 
+  mutate(vehicleid = as.character(vehicleid)) %>% 
+  mutate(gps_fix_type = as.character(gps_fix_type)) %>% 
+  mutate(SP_CODE = as.character(SP_CODE)) 
+  
+#N/A values
+dataCleanedNA <- dataCleaned %>% 
+ na.locf(na.rm = FALSE)
+
+```
+# saving
+```{r}
+saveRDS(dataCleanedNA, "../data/data_aggregated.rds")
+```
+

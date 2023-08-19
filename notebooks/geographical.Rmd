@@ -12,6 +12,8 @@ library(leaflet)
 library(ggspatial)
 library(rnaturalearth)
 library(rnaturalearthdata)
+library(maps)
+library(osrm)
 ```
 
 ```{r}
@@ -23,11 +25,16 @@ unique(data$PR_NAME)
 #select and filter
 ```{r}
 data_geo <- data %>% 
-  #filter(`vehicleid` %in% c("104804470")) %>% 
+  #filter(`PR_NAME` %in% c("Western Cape")) %>% 
   dplyr::select(`timestamp`, `vehicleid`, `event_description`, `coordinate_latitude`, `coordinate_longitude`)
-  
+
+data_geo_event <- data %>% 
+  #filter(`PR_NAME` %in% c("Western Cape")) %>% 
+  dplyr::select(`timestamp`, `vehicleid`, `event_description`, `coordinate_latitude`, `coordinate_longitude`)
+
 
 data_geo
+data_geo_event
 ```
 
 # convert to spatial dataframe
@@ -39,16 +46,31 @@ data_spatial <- st_as_sf(
 )
 ```
 
+# from points to lines
+```{r}
+data_spatial <- data_spatial %>%
+  group_by(vehicleid) %>%
+  arrange(timestamp) %>% 
+  summarise(do_union = F)
+
+routes_spatial <- data_spatial %>% 
+  st_cast(to = "LINESTRING")
+
+routes_spatial = routes_spatial %>% 
+  mutate(distance = st_length(.))
+```
+
 # initial plotting
 ```{r}
 
-world <- ne_states(country = "South Africa", returnclass = "sf")
+world <- ne_countries(country = "South Africa", returnclass = "sf") %>% 
+  st_set_crs(4326)
 class(world)
 
 data_spatial %>%   
   ggplot()+
-  geom_sf(fill='red')+
-  geom_sf(data = world)+
+  geom_sf(color=data_geo$vehicleid,size = 0.05)+
+  #geom_sf(data = world)+
   labs(title = "driving activity of ID 104804470")+
   xlab("Longitude")+
   ylab("Lattitude") +
@@ -60,6 +82,26 @@ data_spatial %>%
 
 # country map
 ```{r}
+# ggplot() +
+#   geom_sf(data=world, lwd=0.2) +
+#   geom_sf(data=routes_spatial, color =vehicleid)
+
+#leaflet  code that doesnt seem to work
+ d <- world.cities
+ 
+ d <- d[which(d$country.etc == "South Africa"),]
+ 
+ d <- st_as_sf(d,coords = c("long","lat"))
+ 
+ st_crs(d) <- 4326
+ 
+ leaflet(data_spatial) %>%
+   addTiles() %>% 
+   addMarkers()
+
+#geom_sf(data_geo, aes(coordinate_longitude, coordinate_lattitude),color=data_geo$vehicleid,size = 0.05)
+  
+  
 
 ```
 

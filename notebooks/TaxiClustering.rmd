@@ -14,6 +14,11 @@ library(factoextra)
 library(corrr)
 library(ggcorrplot)
 library(FactoMineR)
+library(ksharp)
+library(ppclust)
+library(fclust)
+library(cluster)
+
 ```
 
 ## reading in data
@@ -32,7 +37,7 @@ taxiAnalysis
 getting the time spent on from the table by removing the time spent off from the dataset, also selecting the relevant columns
 ```{r}
 averageTimeOnTotal <- averageTimeOn %>% 
-  select(vehicleid, time_ON_Sec, distance_KM, average_speed_KMpH,event_description) %>% 
+  dplyr::select(vehicleid, time_ON_Sec, distance_KM, average_speed_KMpH,event_description) %>% 
   filter(event_description == "Ign OFF")
   
 
@@ -136,8 +141,8 @@ factoextra::fviz_nbclust(x=clusterTable_normalized,
 
 cluster_model <- kmeans(clusterTable_normalized,
                         centers = 3,
-                        nstart = 15,
-                        iter.max = 100)
+                        nstart = 5,
+                        iter.max = 10)
 cluster_model
 ```
 
@@ -154,6 +159,43 @@ fviz_cluster(cluster_model, clusterTable_normalized,
              ellipse.type = "convex",
              geom=c("point"), 
              palette = "jco", 
-             ggtheme = theme_classic()) 
+             ggtheme = theme_classic(),
+             repel = TRUE) 
 
 ```
+# overlapping clusters - more than one driver
+
+```{r}
+res.fcm <- fcm(clusterTable, centers=4, nstart=5)
+output_df <- as.data.frame(res.fcm$u)[1:104,]
+vehicleid <- clusterTable$vehicleid
+membership_df <- as.data.frame(res.fcm$u)
+combined_df <- cbind(vehicleid, membership_df, output_df)
+summary(combined_df)
+res.fcm$v
+
+```
+
+```{r}
+
+newData <- combined_df[,1:4]
+options(scipen = 999)
+
+overlapping_taxi <- newData %>% 
+  mutate(HasOverlap = case_when(`Cluster 1` >= 0.2 & `Cluster 2` >= 0.2 ~ "HasOverlap",
+                                `Cluster 1` >= 0.2 & `Cluster 3` >= 0.2 ~ "HasOverlap",
+                                `Cluster 2` >= 0.2 & `Cluster 3` >= 0.2 ~ "HasOverlap",
+                                TRUE ~ "No_Overlap"))
+overlapping_taxi
+
+taxisWithOverlap <- overlapping_taxi %>% 
+  filter(HasOverlap == "HasOverlap")
+
+clusterTable_overlap <- clusterTable %>% 
+  filter(vehicleid %in% c(111082600,115994042,119059287,122129229,122196196))
+
+write.csv(clusterTable_overlap,file = "../data/multiple_drivers_risk_info.csv")
+saveRDS(clusterTable_overlap, file = "../data/multiple_drivers_risk_info.rds")
+
+```
+

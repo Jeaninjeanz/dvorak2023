@@ -12,9 +12,93 @@ library(lubridate)
 Read in data
 ```{r}
 data <- read_rds("../data/data_aggregated.rds")
+
+head(data)
+```
+#--------------------------------------------------------------------------------
+##START OF FINDING TOTAL TIME IN MOTION 
+#--------------------------------------------------------------------------------
+
+#Finding all states of 'MotionStart' and 'MotionEnd'
+```{r}
+motionData <- data %>% 
+  select(timestamp, vehicleid, event_description, odometer, road_speed) %>% 
+  filter(event_description %in% c("MotionStart", "MotionEnd"))
+head(motionData)
+
 ```
 
-Find all states of ON and OFF
+#Maths
+```{r}
+#Only read time_driving_S WHERE motionEnd!!!
+motionMathData <- motionData %>% 
+  #Calculating time spent driving
+   mutate(time_driving_S = timestamp - lag(timestamp, default = first(timestamp)), 
+          #Calculating distance traveled in M
+          distance_KM = (odometer - lag(odometer, default = first(odometer)))/1000,
+          #Calculating the average speed during Motion.
+          average_speed_KMpH = distance_KM/((as.numeric(time_driving_S))/3600),
+         # Calculate total time driving for a 24hr period
+          day = format(timestamp, format = "%m%d")) 
+  #Removing duplicates!!
+motionMathData = motionMathData[!duplicated(motionMathData$timestamp),]
+
+#Dropping all rows with negative values:
+motionMathData <- motionMathData[as.numeric(motionMathData$time_driving_S) >= 0, ]
+motionMathData <- motionMathData[motionMathData$distance_KM >= 0, ]
+
+totalTimeDriving <- motionMathData %>% 
+  filter(event_description == "MotionEnd") %>% 
+   group_by(vehicleid, day) %>% 
+   summarise(total_time_driving_Hr = (sum(as.numeric(time_driving_S))/3600))
+totalTimeDriving
+
+
+totalTimeDriving
+
+
+```
+
+```{r}
+#Calculating risk based on average speeds
+speedingDataRisk <- motionMathData %>% 
+  filter(event_description == "MotionEnd") %>% 
+   group_by(vehicleid, day) %>% 
+   summarise(average_limit_per_day = (mean(road_speed)), 
+             average_speed_per_day = (mean(average_speed_KMpH))) %>% 
+  #Calculating risk based on average speed limit per day - average speed per day
+  mutate(speedingRisk = case_when((average_limit_per_day - average_speed_per_day) <= -5 ~ 10,
+                                  (average_limit_per_day - average_speed_per_day) <= 0 ~ 10,
+                                  (average_limit_per_day - average_speed_per_day) >= 0 & (average_limit_per_day - average_speed_per_day) <= 1 ~ 6,
+                                  (average_limit_per_day - average_speed_per_day) > 1 ~ 4,
+                                  (average_limit_per_day - average_speed_per_day) > 3 ~ 3,
+                                  (average_limit_per_day - average_speed_per_day) > 4 ~ 2,
+                                  (average_limit_per_day - average_speed_per_day) > 5 ~ 1)) %>% 
+  group_by(vehicleid) %>% 
+  summarise(average_speeding_risk = mean(speedingRisk))
+
+speedingDataRisk
+
+#Calculating risk of total time on road during day
+ timeDriving <- totalTimeDriving %>%
+   #risk classification per day
+   mutate(average_driving_duration_risk = case_when(total_time_driving_Hr >= 8 ~ 10,
+                                                    total_time_driving_Hr >= 6 ~ 8,
+                                                    total_time_driving_Hr >= 4 ~ 6,
+                                                    total_time_driving_Hr >= 2 ~ 4,
+                                                    total_time_driving_Hr >= 1 ~ 2,
+                                                    total_time_driving_Hr < 1 ~ 1)) %>%
+   group_by(vehicleid) %>% 
+   summarise(total_average_driving_duration_risk = mean(average_driving_duration_risk))
+ timeDriving
+```
+
+
+#--------------------------------------------------------------------------------
+##START OF FINDING AVERAGE SPEED INTERVALS
+#--------------------------------------------------------------------------------
+
+#Find all states of ON and OFF
 ```{r}
 
 data_Fil <- data %>% 
@@ -23,13 +107,16 @@ data_Fil <- data %>%
 
 ```
 
-Maths
+#Maths
 ```{r}
 
 #Only read time_ON WHERE Ign OFF!!!
 dataMath <- data_Fil %>% 
+  #Calculating time spent ON 
    mutate(time_ON_Sec = timestamp - lag(timestamp, default = first(timestamp)), 
-          distance_KM = (odometer - lag(odometer, default = first(odometer)))/1000, 
+          #Calculating distance traveled in KM
+          distance_KM = (odometer - lag(odometer, default = first(odometer)))/1000,
+          #Calculating the average speed during engine start and engine stop.
           average_speed_KMpH = distance_KM/((as.numeric(time_ON_Sec))/3600))
 
 #Removing duplicates!!

@@ -14,8 +14,8 @@ library(factoextra)
 
 #Reading in both the claims data and the taxi data
 ```{r}
-claims <- read.csv("claims_data (1).csv")
-taxis <- read_rds("all_data.rds")
+claims <- read.csv("../data/claims_data.csv")
+taxis <- read_rds("../data/all_data.rds")
 claims
 ```
 #filtering the claims data to only the taxis that have submitted claims
@@ -99,7 +99,68 @@ joinTableTimes
 #Combining the above table with the claimed table to see the number of claims for each taxi in the list
 ```{r}
 joinTablesClaims <- joinTableTimes %>% 
-  left_join(claimed, joinTableTimes, by = "vehicleidA")
+  left_join(claimed, joinTableTimes, by = "vehicleid") %>% 
+  mutate(accident = TRUE)
 joinTablesClaims
 ```
+#combineing table and classifying risk based on accidents
+```{r}
+accidentRisk <- claims %>% 
+  select(vehicleid) %>% 
+  left_join(joinTablesClaims, claims, by = "vehicleid") %>% 
+  select(vehicleid, accident) %>% 
+  mutate(accident = ifelse(is.na(accident),
+                           FALSE,
+                           TRUE)) %>% 
+  mutate(risk = ifelse(accident == TRUE, 
+         10, 
+         1)) %>% 
+  select(!accident)
+  length(unique(accidentRisk$`vehicleid`))
+
+accidentRisk
+```
+```{r}
+costRisk <- claims %>% 
+  #replacing NULL with 0 
+  mutate(total.claims.cost = ifelse(total.claims.cost == "NULL", 0, total.claims.cost)) %>%
+  #converting total.claims.cost from char to double
+  mutate(total.claims.cost = as.double(total.claims.cost)) %>% 
+  #classifying cost risk
+  mutate(costRisk = case_when(total.claims.cost > 250000 ~ 10,
+                               total.claims.cost > 125000 ~ 7,
+                               total.claims.cost > 100000 ~ 6,
+                               total.claims.cost > 85000 ~ 5,
+                               total.claims.cost > 60000 ~ 4,
+                               total.claims.cost > 40000 ~ 3,
+                               total.claims.cost < 40000 & total.claims.cost > 0  ~ 2,
+                              total.claims.cost == 0 ~ 1)) %>%
+  #classifyling claim risk
+  mutate(claimRisk = case_when(number.of.claims > 4 ~ 10,
+                               number.of.claims > 2 ~ 5,
+                               number.of.claims > 0 ~ 3,
+                               number.of.claims == 0 ~ 1)) %>% 
+  #calculating cost per claim risk
+  mutate(costPerClaimRisk = case_when((total.claims.cost/number.of.claims) > 150000 ~ 10,
+                                      (total.claims.cost/number.of.claims) > 120000 ~ 7,
+                                      (total.claims.cost/number.of.claims) > 80000 ~ 5,
+                                      (total.claims.cost/number.of.claims) > 60000 ~ 4,
+                                      (total.claims.cost/number.of.claims) > 30000 ~ 3,
+                                      (total.claims.cost/number.of.claims) > 0 ~ 2,
+                                      (total.claims.cost+number.of.claims) == 0 ~ 1,)) %>% 
+  group_by(vehicleid) %>% 
+  mutate(totalClaimsRisk = (costRisk * 0.50 + claimRisk * 0.30 + costPerClaimRisk * 0.20)) %>% 
+  ungroup(vehicleid) %>% 
+  arrange(desc(totalClaimsRisk))
+  
+costRisk
+```
+```{r}
+claimsRiskFinal <- costRisk %>% 
+  select(vehicleid, totalClaimsRisk)
+claimsRiskFinal
+
+saveRDS(claimsRiskFinal, file = "../data/claimsRiskFinal.rds")
+```
+
 

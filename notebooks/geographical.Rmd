@@ -120,7 +120,7 @@ data_geo_Idle <- st_as_sf(
   
 ```
 
-# GPS Speeding Log
+# GPS Speeding Log - weatern cape
 ```{r}
 # initial attempt
 # ggplot() +
@@ -141,11 +141,9 @@ my_icons <- awesomeIcons(icon = data_geo$icon,
                          #markerColor = data_spatial$vehicleid,
                          library = "fa")
  
-st_coordinates(data_geo_events$geometry)[, "X"]
-
 data_geo_speeding %>% 
   leaflet() %>%
-  setView(lng = 25, lat = -30, zoom = 5) %>% 
+  setView(lng = 20, lat = -33, zoom = 5) %>% 
   addProviderTiles("Esri.WorldGrayCanvas", options = tileOptions(minZoom=5, maxZoom=16))%>%  
   addAwesomeMarkers(lng = st_coordinates(data_geo_speeding$geometry)[, "X"], 
                     lat = st_coordinates(data_geo_speeding$geometry)[, "Y"],

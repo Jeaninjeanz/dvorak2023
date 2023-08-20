@@ -20,7 +20,7 @@ library(factoextra)
 #line to be used when running with all data
 #name is due to how the origional code was written and im too lazy to fix it 
 ```{r}
-firstTaxi <- read_rds("data_aggregated (1).rds")
+firstTaxi <- read_rds("../data/data_aggregated.rds")
 firstTaxi <- firstTaxi %>% 
   filter(gps_fix_type == 3)
 ```
@@ -28,7 +28,7 @@ firstTaxi <- firstTaxi %>%
 #could use this data as part of the cluster analysis or to compare for profiles portentually, have not done this for the rest but is easy to do - thoughts?
 ```{r}
 firstTaxiSpeed <- firstTaxi %>% 
-  select("partition_date", "vehicleid", "timestamp", "speed", "road_speed", "SP_NAME", "gps_fix_type") %>% 
+  dplyr::select("partition_date", "vehicleid", "timestamp", "speed", "road_speed", "SP_NAME", "gps_fix_type") %>% 
   mutate(road_speed = as.integer(road_speed)) %>% 
   mutate(timestamp = as.character(timestamp)) %>% 
   mutate(vehicleid = as.integer(vehicleid)) %>% 
@@ -67,7 +67,7 @@ firstTaxiSpeeding10More
 #Looking at which area the taxi is speeding on average in, it is possible to ensure that the taxis that speed on average avoid these areas
 ```{r}
 firstTaxiSpeedAvg <- firstTaxiSpeed %>% 
-  select(vehicleid, SP_NAME, speed, road_speed) %>% 
+  dplyr::select(vehicleid, SP_NAME, speed, road_speed) %>% 
   group_by(SP_NAME, vehicleid) %>% 
   summarise(mean(road_speed), mean(speed)) %>% 
   rename(avgspeed = "mean(speed)") %>% 
@@ -86,7 +86,7 @@ firstTaxiSpeedAvgnot
 ```{r}
 firstTaxiSpeedAvg1 <- firstTaxiSpeedAvg %>% 
   mutate(avgDifference = avglimit - avgspeed) %>% 
-  select(SP_NAME, avgDifference)
+  dplyr::select(SP_NAME, avgDifference)
 firstTaxiSpeedAvg1
 ```
 summary of the table above
@@ -130,7 +130,7 @@ firstTaxiSpeedRiskAvg
 #Starting to look at the cornering of each taxi
 ```{r}
 firstTaxiCorner <- firstTaxi%>% 
-  select("partition_date", "vehicleid", "timestamp","lateral_g", "SP_NAME") %>% 
+  dplyr::select("partition_date", "vehicleid", "timestamp","lateral_g", "SP_NAME") %>% 
   filter(lateral_g > 0.1 & lateral_g < 0.42) 
 firstTaxiCorner
 ```
@@ -183,7 +183,7 @@ firstTaxiCornerCombine
 #starting to look at the each braking event of each taxi
 ```{r}
 firstTaxiBraking <- firstTaxi %>% 
-  select(partition_date, vehicleid, linear_g, timestamp) %>% 
+  dplyr::select(partition_date, vehicleid, linear_g, timestamp) %>% 
   filter(linear_g < -0.2 & linear_g > -0.47) %>% 
   arrange(desc(linear_g))
 firstTaxiBraking
@@ -221,7 +221,7 @@ firstTaxiBrakingRiskAvg
 #startingthe analysis of acceleration
 ```{r}
 firstTaxiAcc <- firstTaxi %>% 
-  select(partition_date, vehicleid, linear_g, timestamp) %>% 
+  dplyr::select(partition_date, vehicleid, linear_g, timestamp) %>% 
   filter(linear_g > 0.2 & linear_g < 0.47) %>% 
   arrange(desc(linear_g))
 firstTaxiAcc
@@ -265,7 +265,7 @@ firstTaxiRisk <- firstTaxiSpeedRiskAvg %>%
 firstTaxiRisk
 ```
 ```{r}
-claimsRisk <- read_rds("claimsRiskFinal.rds")
+claimsRisk <- read_rds("../data/claimsRiskFinal.rds")
 claimsRisk
 ```
 ```{r}
@@ -273,8 +273,20 @@ combineRisk <- firstTaxiRisk %>%
   left_join(claimsRisk, firstTaxiRisk, by = "vehicleid")
 combineRisk
 ```
+```{r}
+speedingRisk <- read_rds("../data/speeding_risk.rds")
+average_time_driving_risk <- read_rds("../data/average_time_driving_risk.rds")
+speedingRisk
+average_time_driving_risk
+```
+```{r}
+combineRisk <- combineRisk %>% 
+  left_join(speedingRisk, combineRisk, by = "vehicleid") %>% 
+  left_join(average_time_driving_risk, combineRisk, by = "vehicleid")
+combineRisk
+```
 
 ```{r}
-saveRDS(combineRisk, file = "TaxiRiskAnalysis.rds") 
+saveRDS(combineRisk, file = "../data/TaxiRiskAnalysis.rds") 
 ```
 
